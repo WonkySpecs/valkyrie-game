@@ -1,7 +1,7 @@
 import pygame
 from game_object import GameObject
 from collections import defaultdict
-from asset_factory import get_player_sprites, get_background
+from asset_factory import load_player_animations, get_background
 
 WIDTH = 640
 HEIGHT = 480
