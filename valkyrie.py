@@ -1,7 +1,7 @@
 import pygame
 from game_object import GameObject
 from collections import defaultdict
-from asset_factory import get_sprite, Entity
+from asset_factory import get_player_sprites, get_background
 
 WIDTH = 640
 HEIGHT = 480
@@ -12,13 +12,14 @@ input_event_types = [pygame.KEYDOWN,
                      pygame.MOUSEBUTTONDOWN,
                      pygame.MOUSEMOTION]
 
-bg = get_sprite(Entity.BACKGROUND)
+bg = get_background()
 
 pressed_buttons = []
 
 
 def update(game_state, inputs):
     player = game_state["player"]
+    flying = False
     for key_input in inputs[pygame.KEYDOWN]:
         if key_input.key in [pygame.K_w, pygame.K_a, pygame.K_d]:
             pressed_buttons.append(key_input.key)
@@ -28,19 +29,31 @@ def update(game_state, inputs):
             pressed_buttons.remove(key_input.key)
 
     if pygame.K_w in pressed_buttons:
-        player.y_vel = max(player.y_vel - 0.55, -2.2)
+        player.y_vel = max(player.y_vel - 0.45, -2.5)
+        flying = True
 
     x_vel = 0
-    if pygame.K_a in pressed_buttons:
+    if pygame.K_a in pressed_buttons and player.x > 0:
         x_vel -= 1
-    if pygame.K_d in pressed_buttons:
+    if pygame.K_d in pressed_buttons and player.x < WIDTH - 60:
         x_vel += 1
+    current_player_animation = "neutral"
+    if flying:
+        if player.x_vel == 0:
+            current_player_animation = "fly_neutral"
+        else:
+            current_player_animation = "fly_left" if x_vel < 0 else "fly_right"
+    player.update_animation(current_player_animation)
     player.x_vel = x_vel
-    player.y_vel = min(player.y_vel + 0.03, 3.5)
+    player.y_vel = min(player.y_vel + 0.035, 3.5)
+
     if player.y_vel > 0 and player.y > HEIGHT - 80:
         player.y_vel = 0
     player.x += player.x_vel
     player.y += player.y_vel
+    if player.y < 5:
+        player.y = 5
+        player.y_vel = 0
 
 
 def draw(window, game_state):
@@ -60,7 +73,7 @@ def main():
     game_state = {
         "player": GameObject(initial_pos=(WIDTH // 2, HEIGHT // 2),
                              initial_vel=(0, 0),
-                             sprites={"neutral": [get_sprite(Entity.PLAYER)]})
+                             sprites=get_player_sprites())
     }
 
     running = True
