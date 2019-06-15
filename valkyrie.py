@@ -6,20 +6,9 @@ from asset_factory import get_player_sprites, get_background
 WIDTH = 640
 HEIGHT = 480
 
-input_event_types = [pygame.KEYDOWN,
-                     pygame.KEYUP,
-                     pygame.MOUSEBUTTONUP,
-                     pygame.MOUSEBUTTONDOWN,
-                     pygame.MOUSEMOTION]
-
-bg = get_background()
-
-pressed_buttons = []
-
 
 def update(game_state, inputs):
-    player = game_state["player"]
-    flying = False
+    pressed_buttons = game_state["buttons_held"]
     for key_input in inputs[pygame.KEYDOWN]:
         if key_input.key in [pygame.K_w, pygame.K_a, pygame.K_d]:
             pressed_buttons.append(key_input.key)
@@ -28,6 +17,8 @@ def update(game_state, inputs):
         if key_input.key in pressed_buttons:
             pressed_buttons.remove(key_input.key)
 
+    player = game_state["player"]
+    flying = False
     if pygame.K_w in pressed_buttons:
         player.y_vel = max(player.y_vel - 0.45, -2.5)
         flying = True
@@ -58,7 +49,7 @@ def update(game_state, inputs):
 
 def draw(window, game_state):
     window.fill((123, 123, 123))
-    window.blit(bg, (0, 0))
+    window.blit(game_state["background"], (0, 0))
     player = game_state["player"]
     window.blit(player.get_sprite(), (player.x, player.y))
     pygame.display.update()
@@ -70,10 +61,18 @@ def main():
     window = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("Valkyrie")
 
+    input_event_types = [pygame.KEYDOWN,
+                         pygame.KEYUP,
+                         pygame.MOUSEBUTTONUP,
+                         pygame.MOUSEBUTTONDOWN,
+                         pygame.MOUSEMOTION]
+
     game_state = {
         "player": GameObject(initial_pos=(WIDTH // 2, HEIGHT // 2),
                              initial_vel=(0, 0),
-                             sprites=get_player_sprites())
+                             animations=load_player_animations()),
+        "background": get_background(),
+        "buttons_held": []
     }
 
     running = True
