@@ -2,12 +2,32 @@ import pygame
 from game_object import GameObject
 from collections import defaultdict
 from asset_factory import load_player_animations, get_background
+from typing import List, Tuple
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
 
-def update(game_state, inputs):
+def rect_tuple_to_sides(rect):
+    # A replacement for pygame Rects, as they use inverted y axis: may regret later
+    left = rect[0]
+    right = rect[0] + rect[2]
+    top = rect[1]
+    bottom = rect[1] - rect[3]
+    return left, right, top, bottom
+
+
+def inside_boundaries(boundaries: List[Tuple], player_rect: Tuple) -> bool:
+    player_left, player_right, player_top, player_bottom = rect_tuple_to_sides(player_rect)
+    for boundary_rect in boundaries:
+        left, right, top, bottom = rect_tuple_to_sides(boundary_rect)
+        if player_left >= left and player_right <= right and player_top <= top and player_bottom >= bottom:
+            return True
+
+    return False
+
+
+def update(game_state, inputs, level):
     pressed_buttons = game_state["buttons_held"]
     for key_input in inputs[pygame.KEYDOWN]:
         if key_input.key in [pygame.K_w, pygame.K_a, pygame.K_d]:
@@ -18,30 +38,48 @@ def update(game_state, inputs):
             pressed_buttons.remove(key_input.key)
 
     player = game_state["player"]
-    flying = False
+    # This needs to be a lot more nuanced
+    in_air = player.y > 0
+    flying = pygame.K_w in pressed_buttons or (
+                in_air and (
+                    pygame.K_a in pressed_buttons or pygame.K_d in pressed_buttons))
+    current_player_animation = "neutral"
     if pygame.K_w in pressed_buttons:
         player.y_vel = min(player.y_vel + 0.45, 2.5)
-        flying = True
-
-    x_vel = 0
-    if pygame.K_a in pressed_buttons and player.x > 0:
-        x_vel -= 1
-    if pygame.K_d in pressed_buttons and player.x < SCREEN_WIDTH - 60:
-        x_vel += 1
-    current_player_animation = "neutral"
     if flying:
-        if player.x_vel == 0:
-            current_player_animation = "fly_neutral"
+        if pygame.K_a in pressed_buttons:
+            current_player_animation = "fly_left"
+            player.x_vel -= 0.025
+        elif pygame.K_d in pressed_buttons:
+            current_player_animation = "fly_right"
+            player.x_vel += 0.025
         else:
-            current_player_animation = "fly_left" if x_vel < 0 else "fly_right"
+            current_player_animation = "fly_neutral"
+        if player.x_vel > 0:
+            player.x_vel -= player.x_vel // 15
+        else:
+            player.x_vel += abs(player.x_vel) // 15
+    else:
+        if not in_air:
+            if pygame.K_a in pressed_buttons:
+                player.x_vel = -1
+            elif pygame.K_d in pressed_buttons:
+                player.x_vel = 1
+            else:
+                player.x_vel = 0
+
     player.update_animation(current_player_animation)
-    player.x_vel = x_vel
     player.y_vel = max(player.y_vel - 0.035, -3.5)
 
-    player.x += player.x_vel
-    player.y += player.y_vel
-    if player.y < 5:
-        player.y = 5
+    new_x, new_y = player.x + player.x_vel, player.y + player.y_vel
+    if inside_boundaries(level["player_boundaries"], pygame.Rect(new_x, player.y, 64, 64)):
+        player.x += player.x_vel
+    else:
+        player.x_vel = 0
+
+    if inside_boundaries(level["player_boundaries"], pygame.Rect(player.y, new_y, 64, 64)):
+        player.y += player.y_vel
+    else:
         player.y_vel = 0
 
 
@@ -86,6 +124,10 @@ def main():
         "buttons_held": []
     }
 
+    level = {
+        "player_boundaries": [(-350, 950, 1600, 1200)]
+    }
+
     running = True
     while running:
         inputs = defaultdict(list)
@@ -97,7 +139,7 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 running = False
 
-        update(game_state, inputs)
+        update(game_state, inputs, level)
         draw(window, game_state)
     pygame.quit()
 
