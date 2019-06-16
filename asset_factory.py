@@ -14,7 +14,7 @@ def load_player_animations():
     flight_sprites = [load_sprite("player_neutral_flight_1"),
                       load_sprite("player_neutral_flight_2"),
                       load_sprite("player_neutral_flight_3")]
-    durations = [10 for _ in range(len(flight_sprites))]
+    durations = [18 for _ in range(len(flight_sprites))]
     animations = [Animation('neutral', [load_sprite("player_neutral")], [1234]),
                   Animation('fly_neutral', flight_sprites, durations),
                   Animation('fly_left', [transform.rotate(s, 20) for s in flight_sprites], durations),

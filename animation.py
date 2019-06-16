@@ -8,9 +8,12 @@ class Animation:
         self.total_duration = sum(durations)
 
     def next_frame(self):
-        self.frame_count = (self.frame_count + 1) % self.total_duration
+        self.frame_count += 1
         if self.frame_count > sum(self.durations[:self.sprite_num + 1]):
-            self.sprite_num = (self.sprite_num + 1) % len(self.sprites)
+            if self.frame_count > self.total_duration:
+                self.reset()
+            else:
+                self.sprite_num += 1
 
     def get_current_sprite(self):
         return self.sprites[self.sprite_num]
