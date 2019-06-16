@@ -25,4 +25,4 @@ def load_player_animations():
 
 
 def get_background():
-    return image.load(os.path.join(_asset_root_folder, "bg.jpg"))
+    return transform.scale(image.load(os.path.join(_asset_root_folder, "bg.jpg")), (1600, 1200))

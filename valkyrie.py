@@ -3,8 +3,8 @@ from game_object import GameObject
 from collections import defaultdict
 from asset_factory import load_player_animations, get_background
 
-WIDTH = 640
-HEIGHT = 480
+SCREEN_WIDTH = 640
+SCREEN_HEIGHT = 480
 
 
 def update(game_state, inputs):
@@ -20,13 +20,13 @@ def update(game_state, inputs):
     player = game_state["player"]
     flying = False
     if pygame.K_w in pressed_buttons:
-        player.y_vel = max(player.y_vel - 0.45, -2.5)
+        player.y_vel = min(player.y_vel + 0.45, 2.5)
         flying = True
 
     x_vel = 0
     if pygame.K_a in pressed_buttons and player.x > 0:
         x_vel -= 1
-    if pygame.K_d in pressed_buttons and player.x < WIDTH - 60:
+    if pygame.K_d in pressed_buttons and player.x < SCREEN_WIDTH - 60:
         x_vel += 1
     current_player_animation = "neutral"
     if flying:
@@ -36,10 +36,8 @@ def update(game_state, inputs):
             current_player_animation = "fly_left" if x_vel < 0 else "fly_right"
     player.update_animation(current_player_animation)
     player.x_vel = x_vel
-    player.y_vel = min(player.y_vel + 0.035, 3.5)
+    player.y_vel = max(player.y_vel - 0.035, -3.5)
 
-    if player.y_vel > 0 and player.y > HEIGHT - 80:
-        player.y_vel = 0
     player.x += player.x_vel
     player.y += player.y_vel
     if player.y < 5:
@@ -47,18 +45,31 @@ def update(game_state, inputs):
         player.y_vel = 0
 
 
-def draw(window, game_state):
-    window.fill((123, 123, 123))
-    window.blit(game_state["background"], (0, 0))
+def get_screen_coordinate(screen_center, world_camera_center, world_top_left):
+    offset = world_top_left - world_camera_center
+    return screen_center.x + offset.x, screen_center.y - offset.y
+
+
+def draw(screen, game_state):
     player = game_state["player"]
-    window.blit(player.get_sprite(), (player.x, player.y))
+    world_camera_center = pygame.math.Vector2(player.x, player.y + 80)
+    screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+
+    def calc_screen_position(top_left):
+        return get_screen_coordinate(screen_center, world_camera_center, top_left)
+
+    screen.fill((123, 123, 123))
+    for bg_image, bg_top_left in game_state["backgrounds"]:
+        screen.blit(bg_image, calc_screen_position(bg_top_left))
+
+    screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
     pygame.display.update()
 
 
 def main():
     pygame.init()
 
-    window = pygame.display.set_mode((WIDTH, HEIGHT))
+    window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Valkyrie")
 
     input_event_types = [pygame.KEYDOWN,
@@ -66,12 +77,12 @@ def main():
                          pygame.MOUSEBUTTONUP,
                          pygame.MOUSEBUTTONDOWN,
                          pygame.MOUSEMOTION]
-
+    bg_sprite = get_background()
     game_state = {
-        "player": GameObject(initial_pos=(WIDTH // 2, HEIGHT // 2),
+        "player": GameObject(initial_pos=(0, 0),
                              initial_vel=(0, 0),
                              animations=load_player_animations()),
-        "background": get_background(),
+        "backgrounds": [(bg_sprite, pygame.Vector2(-350, 950))],
         "buttons_held": []
     }
 
