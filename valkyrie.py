@@ -69,6 +69,12 @@ def get_screen_coordinate(screen_center, camera_center, point):
     return point.x + offset_x, point.y + offset_y
 
 
+def rect_to_pointlist(rect, coordinate_convert_func):
+    corners = [(rect.left, rect.top), (rect.right, rect.top),
+               (rect.right, rect.bottom), (rect.left, rect.bottom)]
+    return [coordinate_convert_func(pygame.Vector2(corner)) for corner in corners]
+
+
 def draw(screen, game_state):
     player = game_state["player"]
     screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
@@ -83,11 +89,9 @@ def draw(screen, game_state):
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
     if DEBUG:
+        pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
         for bound in game_state['player_boundaries']:
-            corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom),
-                       (bound.left, bound.bottom)]
-            point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
-            pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
+            pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(bound, calc_screen_position), 2)
     fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
     screen.blit(fps, (0, 0))
     pygame.display.update()
