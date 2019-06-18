@@ -5,6 +5,8 @@ from asset_factory import load_player_animations, get_background
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
+MAX_FPS = 300
+
 DEBUG = True
 
 
@@ -13,7 +15,7 @@ def update(game_state):
     player = game_state["player"]
     # This needs to be a lot more nuanced
     in_air = player.y < game_state['player_boundaries'][0].bottom - 65
-    flying = pressed[pygame.K_w ]or (
+    flying = pressed[pygame.K_w] or (
             in_air and (
                 pressed[pygame.K_a ]or pressed[pygame.K_d]))
     current_player_animation = "neutral"
@@ -80,6 +82,8 @@ def draw(screen, game_state):
             corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom), (bound.left, bound.bottom)]
             point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
             pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
+    fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
+    screen.blit(fps, (0, 0))
     pygame.display.update()
 
 
@@ -89,17 +93,21 @@ def main():
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Valkyrie")
     bg_sprite = get_background()
+    clock = pygame.time.Clock()
     game_state = {
         "player": GameObject(initial_pos=(1, 1),
                              initial_vel=(0, 0),
                              animations=load_player_animations()),
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
-        "player_boundaries": [pygame.Rect(0, 0, 1200, 900)]
+        "player_boundaries": [pygame.Rect(0, 0, 1200, 900)],
+        "clock": clock,
+        "hud_font": pygame.font.Font(None, 20)
     }
 
     running = True
     while running:
+        clock.tick(MAX_FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
