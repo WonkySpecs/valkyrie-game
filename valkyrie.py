@@ -12,6 +12,7 @@ DEBUG = True
 
 def update(game_state):
     pressed = pygame.key.get_pressed()
+    dt = game_state['clock'].tick(MAX_FPS)
     player = game_state["player"]
     # This needs to be a lot more nuanced
     in_air = player.y < game_state['player_boundaries'][0].bottom - 64
@@ -112,7 +113,6 @@ def main():
 
     running = True
     while running:
-        clock.tick(MAX_FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
