@@ -2,32 +2,12 @@ import pygame
 from game_object import GameObject
 from collections import defaultdict
 from asset_factory import load_player_animations, get_background
-from typing import List, Tuple
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
 
-def rect_tuple_to_sides(rect):
-    # A replacement for pygame Rects, as they use inverted y axis: may regret later
-    left = rect[0]
-    right = rect[0] + rect[2]
-    top = rect[1]
-    bottom = rect[1] - rect[3]
-    return left, right, top, bottom
-
-
-def inside_boundaries(boundaries: List[Tuple], player_rect: Tuple) -> bool:
-    player_left, player_right, player_top, player_bottom = rect_tuple_to_sides(player_rect)
-    for boundary_rect in boundaries:
-        left, right, top, bottom = rect_tuple_to_sides(boundary_rect)
-        if player_left >= left and player_right <= right and player_top <= top and player_bottom >= bottom:
-            return True
-
-    return False
-
-
-def update(game_state, inputs, level):
+def update(game_state, inputs):
     pressed_buttons = game_state["buttons_held"]
     for key_input in inputs[pygame.KEYDOWN]:
         if key_input.key in [pygame.K_w, pygame.K_a, pygame.K_d]:
@@ -39,13 +19,13 @@ def update(game_state, inputs, level):
 
     player = game_state["player"]
     # This needs to be a lot more nuanced
-    in_air = player.y > 0
+    in_air = player.y < game_state['player_boundaries'][0].bottom - 65
     flying = pygame.K_w in pressed_buttons or (
-                in_air and (
-                    pygame.K_a in pressed_buttons or pygame.K_d in pressed_buttons))
+            in_air and (
+                pygame.K_a in pressed_buttons or pygame.K_d in pressed_buttons))
     current_player_animation = "neutral"
     if pygame.K_w in pressed_buttons:
-        player.y_vel = min(player.y_vel + 0.45, 2.5)
+        player.y_vel = max(player.y_vel - 0.45, -2.5)
     if flying:
         if pygame.K_a in pressed_buttons:
             current_player_animation = "fly_left"
@@ -69,38 +49,43 @@ def update(game_state, inputs, level):
                 player.x_vel = 0
 
     player.update_animation(current_player_animation)
-    player.y_vel = max(player.y_vel - 0.035, -3.5)
+    player.y_vel = min(player.y_vel + 0.035, 3.5)
 
     new_x, new_y = player.x + player.x_vel, player.y + player.y_vel
-    if inside_boundaries(level["player_boundaries"], pygame.Rect(new_x, player.y, 64, 64)):
-        player.x += player.x_vel
+    bound = game_state["player_boundaries"][0]
+    if bound.contains(pygame.Rect(new_x, player.y, 64, 64)):
+        player.x = new_x
     else:
         player.x_vel = 0
 
-    if inside_boundaries(level["player_boundaries"], pygame.Rect(player.y, new_y, 64, 64)):
-        player.y += player.y_vel
+    if bound.contains(pygame.Rect(player.x, new_y, 64, 64)):
+        player.y = new_y
     else:
         player.y_vel = 0
 
 
-def get_screen_coordinate(screen_center, world_camera_center, world_top_left):
-    offset = world_top_left - world_camera_center
-    return screen_center.x + offset.x, screen_center.y - offset.y
+def get_screen_coordinate(screen_center, camera_center, point):
+    offset_x, offset_y = screen_center.x - camera_center.x, screen_center.y - camera_center.y
+    return point.x + offset_x, point.y + offset_y
 
 
 def draw(screen, game_state):
     player = game_state["player"]
-    world_camera_center = pygame.math.Vector2(player.x, player.y + 80)
     screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+    camera_center = pygame.math.Vector2(player.x, player.y - 80)
 
-    def calc_screen_position(top_left):
-        return get_screen_coordinate(screen_center, world_camera_center, top_left)
+    def calc_screen_position(point):
+        return get_screen_coordinate(screen_center, camera_center, point)
 
     screen.fill((123, 123, 123))
     for bg_image, bg_top_left in game_state["backgrounds"]:
         screen.blit(bg_image, calc_screen_position(bg_top_left))
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
+    bound = game_state['player_boundaries'][0]
+    corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom), (bound.left, bound.bottom)]
+    point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
+    pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
     pygame.display.update()
 
 
@@ -117,15 +102,12 @@ def main():
                          pygame.MOUSEMOTION]
     bg_sprite = get_background()
     game_state = {
-        "player": GameObject(initial_pos=(0, 0),
+        "player": GameObject(initial_pos=(1, 1),
                              initial_vel=(0, 0),
                              animations=load_player_animations()),
-        "backgrounds": [(bg_sprite, pygame.Vector2(-350, 950))],
-        "buttons_held": []
-    }
-
-    level = {
-        "player_boundaries": [(-350, 950, 1600, 1200)]
+        "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
+        "buttons_held": [],
+        "player_boundaries": [pygame.Rect(0, 0, 1200, 900)]
     }
 
     running = True
@@ -139,7 +121,7 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 running = False
 
-        update(game_state, inputs, level)
+        update(game_state, inputs)
         draw(window, game_state)
     pygame.quit()
 
