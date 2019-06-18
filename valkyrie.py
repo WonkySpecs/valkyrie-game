@@ -1,6 +1,5 @@
 import pygame
 from game_object import GameObject
-from collections import defaultdict
 from asset_factory import load_player_animations, get_background
 
 SCREEN_WIDTH = 640
@@ -9,30 +8,22 @@ SCREEN_HEIGHT = 480
 DEBUG = True
 
 
-def update(game_state, inputs):
-    pressed_buttons = game_state["buttons_held"]
-    for key_input in inputs[pygame.KEYDOWN]:
-        if key_input.key in [pygame.K_w, pygame.K_a, pygame.K_d]:
-            pressed_buttons.append(key_input.key)
-
-    for key_input in inputs[pygame.KEYUP]:
-        if key_input.key in pressed_buttons:
-            pressed_buttons.remove(key_input.key)
-
+def update(game_state):
+    pressed = pygame.key.get_pressed()
     player = game_state["player"]
     # This needs to be a lot more nuanced
     in_air = player.y < game_state['player_boundaries'][0].bottom - 65
-    flying = pygame.K_w in pressed_buttons or (
+    flying = pressed[pygame.K_w ]or (
             in_air and (
-                pygame.K_a in pressed_buttons or pygame.K_d in pressed_buttons))
+                pressed[pygame.K_a ]or pressed[pygame.K_d]))
     current_player_animation = "neutral"
-    if pygame.K_w in pressed_buttons:
+    if pressed[pygame.K_w]:
         player.y_vel = max(player.y_vel - 0.45, -2.5)
     if flying:
-        if pygame.K_a in pressed_buttons:
+        if pressed[pygame.K_a]:
             current_player_animation = "fly_left"
             player.x_vel -= 0.025
-        elif pygame.K_d in pressed_buttons:
+        elif pressed[pygame.K_d]:
             current_player_animation = "fly_right"
             player.x_vel += 0.025
         else:
@@ -43,9 +34,9 @@ def update(game_state, inputs):
             player.x_vel += abs(player.x_vel) // 15
     else:
         if not in_air:
-            if pygame.K_a in pressed_buttons:
+            if pressed[pygame.K_a]:
                 player.x_vel = -1
-            elif pygame.K_d in pressed_buttons:
+            elif pressed[pygame.K_d]:
                 player.x_vel = 1
             else:
                 player.x_vel = 0
@@ -97,12 +88,6 @@ def main():
 
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Valkyrie")
-
-    input_event_types = [pygame.KEYDOWN,
-                         pygame.KEYUP,
-                         pygame.MOUSEBUTTONUP,
-                         pygame.MOUSEBUTTONDOWN,
-                         pygame.MOUSEMOTION]
     bg_sprite = get_background()
     game_state = {
         "player": GameObject(initial_pos=(1, 1),
@@ -115,16 +100,13 @@ def main():
 
     running = True
     while running:
-        inputs = defaultdict(list)
         for event in pygame.event.get():
-            if event.type in input_event_types:
-                inputs[event.type].append(event)
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 running = False
 
-        update(game_state, inputs)
+        update(game_state)
         draw(window, game_state)
     pygame.quit()
 
