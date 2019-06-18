@@ -6,6 +6,8 @@ from asset_factory import load_player_animations, get_background
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
+DEBUG = True
+
 
 def update(game_state, inputs):
     pressed_buttons = game_state["buttons_held"]
@@ -82,10 +84,11 @@ def draw(screen, game_state):
         screen.blit(bg_image, calc_screen_position(bg_top_left))
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
-    bound = game_state['player_boundaries'][0]
-    corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom), (bound.left, bound.bottom)]
-    point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
-    pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
+    if DEBUG:
+        for bound in game_state['player_boundaries']:
+            corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom), (bound.left, bound.bottom)]
+            point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
+            pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
     pygame.display.update()
 
 
