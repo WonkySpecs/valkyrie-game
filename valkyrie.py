@@ -87,7 +87,8 @@ def draw(screen, game_state):
     for bg_image, bg_top_left in game_state["backgrounds"]:
         screen.blit(bg_image, calc_screen_position(bg_top_left))
 
-    screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
+    screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.image_x, player.image_y)))
+
     if DEBUG:
         pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
         for bound in game_state['player_boundaries']:
