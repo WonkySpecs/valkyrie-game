@@ -1,5 +1,5 @@
 import pygame
-from game_object import GameObject
+from game_objects import GameObject, Player
 from asset_factory import load_player_animations, get_background
 
 SCREEN_WIDTH = 640
@@ -14,46 +14,50 @@ def update(game_state):
     pressed = pygame.key.get_pressed()
     player = game_state["player"]
     # This needs to be a lot more nuanced
-    in_air = player.y < game_state['player_boundaries'][0].bottom - 65
+    in_air = player.y < game_state['player_boundaries'][0].bottom - 64
     flying = pressed[pygame.K_w] or (
             in_air and (
-                pressed[pygame.K_a ]or pressed[pygame.K_d]))
+                pressed[pygame.K_a] or pressed[pygame.K_d]))
     current_player_animation = "neutral"
     if pressed[pygame.K_w]:
-        player.y_vel = max(player.y_vel - 0.45, -2.5)
+        player.y_vel = max(player.y_vel - player.jetpack_power, -player.terminal_velocity)
     if flying:
         if pressed[pygame.K_a]:
             current_player_animation = "fly_left"
-            player.x_vel -= 0.025
+            player.x_vel -= player.jetpack_power / 2
         elif pressed[pygame.K_d]:
             current_player_animation = "fly_right"
-            player.x_vel += 0.025
+            player.x_vel += player.jetpack_power / 2
         else:
             current_player_animation = "fly_neutral"
         if player.x_vel > 0:
-            player.x_vel -= player.x_vel // 15
+            player.x_vel -= player.x_vel * player.drag_multiplier
         else:
-            player.x_vel += abs(player.x_vel) // 15
+            player.x_vel += abs(player.x_vel) * player.drag_multiplier
     else:
         if not in_air:
             if pressed[pygame.K_a]:
-                player.x_vel = -1
+                player.x_vel = -player.move_speed
             elif pressed[pygame.K_d]:
-                player.x_vel = 1
+                player.x_vel = player.move_speed
             else:
                 player.x_vel = 0
 
     player.update_animation(current_player_animation)
-    player.y_vel = min(player.y_vel + 0.035, 3.5)
+    player.y_vel = min(player.y_vel + GameObject.gravity, player.terminal_velocity)
 
     new_x, new_y = player.x + player.x_vel, player.y + player.y_vel
     bound = game_state["player_boundaries"][0]
-    if bound.contains(pygame.Rect(new_x, player.y, 64, 64)):
+    moved_x_hitbox = player.hitbox.copy()
+    moved_x_hitbox.left = new_x
+    if bound.contains(moved_x_hitbox):
         player.x = new_x
     else:
         player.x_vel = 0
 
-    if bound.contains(pygame.Rect(player.x, new_y, 64, 64)):
+    moved_y_hitbox = player.hitbox.copy()
+    moved_y_hitbox.top = new_y
+    if bound.contains(moved_y_hitbox):
         player.y = new_y
     else:
         player.y_vel = 0
@@ -79,7 +83,8 @@ def draw(screen, game_state):
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.x, player.y)))
     if DEBUG:
         for bound in game_state['player_boundaries']:
-            corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom), (bound.left, bound.bottom)]
+            corners = [(bound.left, bound.top), (bound.right, bound.top), (bound.right, bound.bottom),
+                       (bound.left, bound.bottom)]
             point_list = [calc_screen_position(pygame.Vector2(corner)) for corner in corners]
             pygame.draw.polygon(screen, (255, 0, 0), point_list, 2)
     fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
@@ -95,9 +100,9 @@ def main():
     bg_sprite = get_background()
     clock = pygame.time.Clock()
     game_state = {
-        "player": GameObject(initial_pos=(1, 1),
-                             initial_vel=(0, 0),
-                             animations=load_player_animations()),
+        "player": Player(initial_pos=(1, 1),
+                         initial_vel=(0, 0),
+                         animations=load_player_animations()),
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "player_boundaries": [pygame.Rect(0, 0, 1200, 900)],
