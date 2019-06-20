@@ -50,7 +50,7 @@ class GameObject:
 
 
 class Player(GameObject):
-    drag_multiplier = 0.96
+    drag = 0.03
 
     def __init__(self,
                  initial_pos=(0, 0),
@@ -66,17 +66,17 @@ class Player(GameObject):
         self.jetpack_power = 5.5
         self.flying = False
 
-    def update_velocity(self, inputs, time_multiplier=1, in_air=False):
+    def update_velocity(self, inputs, dt, in_air=False):
         if inputs[pygame.K_w]:
-            self.y_vel -= time_multiplier * self.jetpack_power
+            self.y_vel -= dt * self.jetpack_power
         self.flying = inputs[pygame.K_w] or (
                 in_air and (
                     inputs[pygame.K_a] or inputs[pygame.K_d]))
         if self.flying:
             if inputs[pygame.K_a]:
-                self.x_vel -= time_multiplier * self.jetpack_power / 3
+                self.x_vel -= dt * self.jetpack_power / 3
             elif inputs[pygame.K_d]:
-                self.x_vel += time_multiplier * self.jetpack_power / 3
+                self.x_vel += dt * self.jetpack_power / 3
         else:
             if not in_air:
                 if inputs[pygame.K_a]:
@@ -85,7 +85,7 @@ class Player(GameObject):
                     self.x_vel = self.move_speed
                 else:
                     self.x_vel = 0
-        print(time_multiplier)
-        self.y_vel = self.y_vel + time_multiplier * GameObject.gravity
-        self.x_vel *= min(self.drag_multiplier * time_multiplier, 1)
-        self.y_vel *= min(self.drag_multiplier * time_multiplier, 1)
+        self.y_vel = self.y_vel + dt * GameObject.gravity
+
+        self.x_vel -= self.drag * self.x_vel * dt
+        self.y_vel -= self.drag * self.y_vel * dt

@@ -6,7 +6,6 @@ SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
 MAX_FPS = 60
-EXPECTED_FRAME_TIME_MS = 17
 
 DEBUG = True
 
@@ -15,10 +14,9 @@ def update(game_state):
     player = game_state["player"]
 
     pressed = pygame.key.get_pressed()
-    dt = game_state['clock'].tick(MAX_FPS)
-    frac_expected_time_passed = dt / EXPECTED_FRAME_TIME_MS
+    dt = game_state['clock'].tick(MAX_FPS) / 20
     in_air = player.y < game_state['player_boundaries'][0].bottom - 64
-    player.update_velocity(pressed, frac_expected_time_passed, in_air)
+    player.update_velocity(pressed, dt, in_air)
 
     current_player_animation = "neutral"
     if player.flying:
@@ -34,8 +32,8 @@ def update(game_state):
         # Gives pos in screen, need to convert to world. Tough with moving camera center :/
         print(pygame.mouse.get_pos())
 
-    new_x = player.x + frac_expected_time_passed * player.x_vel
-    new_y = player.y + frac_expected_time_passed * player.y_vel
+    new_x = player.x + dt * player.x_vel
+    new_y = player.y + dt * player.y_vel
     bound = game_state["player_boundaries"][0]
     moved_x_hitbox = player.hitbox.copy()
     moved_x_hitbox.left = new_x
