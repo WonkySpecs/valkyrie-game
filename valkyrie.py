@@ -1,56 +1,45 @@
 import pygame
-from game_objects import GameObject, Player
+from game_objects import Player
 from asset_factory import load_player_animations, get_background
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
-MAX_FPS = 300
+MAX_FPS = 60
+EXPECTED_FRAME_TIME_MS = 17
 
 DEBUG = True
 
 
 def update(game_state):
+    player = game_state["player"]
+
     pressed = pygame.key.get_pressed()
     dt = game_state['clock'].tick(MAX_FPS)
-    player = game_state["player"]
-    # This needs to be a lot more nuanced
+    frac_expected_time_passed = dt / EXPECTED_FRAME_TIME_MS
     in_air = player.y < game_state['player_boundaries'][0].bottom - 64
-    flying = pressed[pygame.K_w] or (
-            in_air and (
-                pressed[pygame.K_a] or pressed[pygame.K_d]))
+    player.update_velocity(pressed, frac_expected_time_passed, in_air)
+
     current_player_animation = "neutral"
-    if pressed[pygame.K_w]:
-        player.y_vel = max(player.y_vel - player.jetpack_power, -player.terminal_velocity)
-    if flying:
+    if player.flying:
         if pressed[pygame.K_a]:
             current_player_animation = "fly_left"
-            player.x_vel -= player.jetpack_power / 2
         elif pressed[pygame.K_d]:
             current_player_animation = "fly_right"
-            player.x_vel += player.jetpack_power / 2
         else:
             current_player_animation = "fly_neutral"
-        if player.x_vel > 0:
-            player.x_vel -= player.x_vel * player.drag_multiplier
-        else:
-            player.x_vel += abs(player.x_vel) * player.drag_multiplier
-    else:
-        if not in_air:
-            if pressed[pygame.K_a]:
-                player.x_vel = -player.move_speed
-            elif pressed[pygame.K_d]:
-                player.x_vel = player.move_speed
-            else:
-                player.x_vel = 0
-
     player.update_animation(current_player_animation)
-    player.y_vel = min(player.y_vel + GameObject.gravity, player.terminal_velocity)
 
-    new_x, new_y = player.x + player.x_vel, player.y + player.y_vel
+    if pygame.mouse.get_pressed()[0]:
+        # Gives pos in screen, need to convert to world. Tough with moving camera center :/
+        print(pygame.mouse.get_pos())
+
+    new_x = player.x + frac_expected_time_passed * player.x_vel
+    new_y = player.y + frac_expected_time_passed * player.y_vel
     bound = game_state["player_boundaries"][0]
     moved_x_hitbox = player.hitbox.copy()
     moved_x_hitbox.left = new_x
+    # TODO: Set edge of hitbox properly. Convert bounds to be like terrain objects
     if bound.contains(moved_x_hitbox):
         player.x = new_x
     else:
