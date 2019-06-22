@@ -94,12 +94,16 @@ def draw(screen, game_state):
     for bg_image, bg_top_left in game_state["backgrounds"]:
         screen.blit(bg_image, calc_screen_position(bg_top_left))
     for terrain_object in game_state['terrain']:
-        screen.blit(terrain_object.get_sprite(), calc_screen_position(pygame.Vector2(terrain_object.x, terrain_object.y)))
+        screen.blit(terrain_object.get_sprite(),
+                    calc_screen_position(pygame.Vector2(terrain_object.x, terrain_object.y)))
+    for enemy in game_state['enemies']:
+        screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.x, enemy.y)))
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.image_x, player.image_y)))
 
     if DEBUG:
         pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
+
     fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
     screen.blit(fps, (0, 0))
     pygame.display.update()
@@ -117,11 +121,10 @@ def main():
                GameObject(pygame.Rect(-200, 0, 20, 800), animations=asset_factory.wall_animation(20, 800)),
                GameObject(pygame.Rect(700, 0, 50, 800), animations=asset_factory.wall_animation(50, 800)),
                GameObject(pygame.Rect(300, 300, 50, 50), animations=asset_factory.wall_animation(50, 50))]
-
     game_state = {
         "player": Player(initial_pos=(1, 1),
-                         initial_vel=(0, 0),
-                         animations=asset_factory.load_player_animations()),
+                         initial_vel=(0, 0)),
+        "enemies": [],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,

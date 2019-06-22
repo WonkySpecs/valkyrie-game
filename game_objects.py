@@ -1,4 +1,5 @@
 import pygame
+import asset_factory
 
 
 class GameObject:
@@ -61,12 +62,11 @@ class Player(GameObject):
     def __init__(self,
                  initial_pos=(0, 0),
                  initial_vel=(0, 0),
-                 animations=None,
                  initial_animation="neutral"):
         super().__init__(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 20, 48),
                          initial_vel=initial_vel,
                          move_speed=7,
-                         animations=animations,
+                         animations=asset_factory.load_player_animations(),
                          initial_animation=initial_animation,
                          image_offset=(-23, -5))
         self.jetpack_power = 5.5
