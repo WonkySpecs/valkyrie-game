@@ -6,7 +6,7 @@ class GameObject:
     gravity = 2.3
 
     def __init__(self, hitbox=None, initial_vel=(0, 0), move_speed=0, drag=0.03,
-                 animations=None, initial_animation="neutral", image_offset=(0, 0)):
+                 animations=None, initial_animation="neutral"):
         self.hitbox = hitbox
         self._exact_pos = pygame.Vector2(hitbox.left, hitbox.top)
         self.x_vel, self.y_vel = initial_vel
@@ -14,7 +14,7 @@ class GameObject:
         self.animations = animations
         self.animation_timer = 0
         self.animation = animations[initial_animation]
-        self.image_offset = image_offset
+        self.image_offset = self.animation.image_offset
         self.in_air = False
         self.drag = drag
 
@@ -42,6 +42,7 @@ class GameObject:
         else:
             self.animation.reset()
             self.animation = self.animations[animation_name]
+            self.image_offset = self.animation.image_offset
 
     def get_sprite(self):
         return self.animation.get_current_sprite()
@@ -108,7 +109,6 @@ class Player(GameObject):
                          move_speed=7,
                          animations=asset_factory.load_player_animations(),
                          initial_animation=initial_animation,
-                         image_offset=(-23, -5),
                          drag=0.03)
         self.jetpack_power = 5.5
 

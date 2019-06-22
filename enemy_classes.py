@@ -13,8 +13,7 @@ class AssaultSoldier(GameObject):
                          initial_vel=initial_vel,
                          move_speed=move_speed,
                          animations=asset_factory.assault_soldier_green(),
-                         initial_animation='face_right',
-                         image_offset=(-12, -9))
+                         initial_animation='face_right')
 
     def update(self, dt, terrain):
         self.update_velocity(dt)
