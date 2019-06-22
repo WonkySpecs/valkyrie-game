@@ -64,27 +64,25 @@ class Player(GameObject):
                          initial_animation=initial_animation,
                          image_offset=(-23, -5))
         self.jetpack_power = 5.5
-        self.flying = False
+        self.in_air = False
 
-    def update_velocity(self, inputs, dt, in_air=False):
+    def update_velocity(self, inputs, dt):
         if inputs[pygame.K_w]:
             self.y_vel -= dt * self.jetpack_power
-        self.flying = inputs[pygame.K_w] or (
-                in_air and (
-                    inputs[pygame.K_a] or inputs[pygame.K_d]))
-        if self.flying:
+            self.in_air = True
+
+        if self.in_air:
             if inputs[pygame.K_a]:
                 self.x_vel -= dt * self.jetpack_power / 3
             elif inputs[pygame.K_d]:
                 self.x_vel += dt * self.jetpack_power / 3
         else:
-            if not in_air:
-                if inputs[pygame.K_a]:
-                    self.x_vel = -self.move_speed
-                elif inputs[pygame.K_d]:
-                    self.x_vel = self.move_speed
-                else:
-                    self.x_vel = 0
+            if inputs[pygame.K_a]:
+                self.x_vel = -self.move_speed
+            elif inputs[pygame.K_d]:
+                self.x_vel = self.move_speed
+            else:
+                self.x_vel = 0
         self.y_vel = self.y_vel + dt * GameObject.gravity
 
         self.x_vel -= self.drag * self.x_vel * dt

@@ -26,3 +26,7 @@ def load_player_animations():
 
 def get_background():
     return transform.scale(image.load(os.path.join(_asset_root_folder, "bg.jpg")), (1600, 1200))
+
+
+def wall_animation(width, height):
+    return {'neutral': Animation('neutral', [transform.scale(load_sprite("black"), (width, height))], [1000])}
