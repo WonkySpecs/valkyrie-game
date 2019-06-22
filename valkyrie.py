@@ -1,5 +1,6 @@
 import pygame
 from game_objects import GameObject, Player
+import enemy_classes
 import asset_factory
 
 SCREEN_WIDTH = 640
@@ -15,59 +16,16 @@ def update(game_state):
 
     pressed = pygame.key.get_pressed()
     dt = game_state['clock'].tick(MAX_FPS) / 20
-    player.update_velocity(pressed, dt)
+    player.update(pressed, dt, game_state['terrain'])
 
-    current_player_animation = "neutral"
-    if player.in_air:
-        if pressed[pygame.K_a]:
-            current_player_animation = "fly_left"
-        elif pressed[pygame.K_d]:
-            current_player_animation = "fly_right"
-        elif pressed[pygame.K_w]:
-            current_player_animation = "fly_neutral"
-    player.update_animation(current_player_animation)
+    for enemy in game_state['enemies']:
+        enemy.update_velocity(dt)
+        enemy.update_pos(dt, game_state['terrain'])
 
     if pygame.mouse.get_pressed()[0]:
         # Gives pos in screen, need to convert to world. Tough with moving camera center :/
         # Camera center will need to be in game_state (needs to be somewhere anyway to know how to move) so can do :)
         print(pygame.mouse.get_pos())
-
-    new_x = player.x + dt * player.x_vel
-    new_y = player.y + dt * player.y_vel
-
-    moved_x_hb = player.hitbox.copy()
-    moved_x_hb.x = new_x
-
-    moved_y_hb = player.hitbox.copy()
-    moved_y_hb.y = new_y
-
-    x_ok, y_ok = True, True
-
-    for hb in [terrain_object.hitbox for terrain_object in game_state['terrain']]:
-        if hb.top < player.hitbox.bottom and hb.bottom > player.hitbox.top:
-            if moved_x_hb.left < hb.left <= moved_x_hb.right:
-                player.hitbox.right = hb.left
-                player.x_vel = 0
-                x_ok = False
-            elif moved_x_hb.right > hb.right >= moved_x_hb.left:
-                player.hitbox.left = hb.right
-                player.x_vel = 0
-                x_ok = False
-
-        if hb.left < player.hitbox.right and hb.right > player.hitbox.left:
-            if moved_y_hb.top < hb.top <= moved_y_hb.bottom:
-                player.hitbox.bottom = hb.top
-                player.y_vel = 0
-                player.in_air = False
-                y_ok = False
-            elif moved_y_hb.bottom > hb.bottom > moved_y_hb.top:
-                player.hitbox.top = hb.bottom
-                player.y_vel = 0
-                y_ok = False
-    if x_ok:
-        player.x = new_x
-    if y_ok:
-        player.y = new_y
 
 
 def get_screen_coordinate(screen_center, camera_center, point):
@@ -97,12 +55,14 @@ def draw(screen, game_state):
         screen.blit(terrain_object.get_sprite(),
                     calc_screen_position(pygame.Vector2(terrain_object.x, terrain_object.y)))
     for enemy in game_state['enemies']:
-        screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.x, enemy.y)))
+        screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.image_x, enemy.image_y)))
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.image_x, player.image_y)))
 
     if DEBUG:
-        pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
+        pygame.draw.polygon(screen, (0, 255, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
+        for enemy in game_state['enemies']:
+            pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(enemy.hitbox, calc_screen_position), 1)
 
     fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
     screen.blit(fps, (0, 0))
@@ -124,7 +84,7 @@ def main():
     game_state = {
         "player": Player(initial_pos=(1, 1),
                          initial_vel=(0, 0)),
-        "enemies": [],
+        "enemies": [enemy_classes.AssaultSoldier((50 + x, 300), (0, -30)) for x in range(50, 600, 25)],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,

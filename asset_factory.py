@@ -30,3 +30,7 @@ def get_background():
 
 def wall_animation(width, height):
     return {'neutral': Animation('neutral', [pygame.transform.scale(load_sprite("black"), (width, height))], [1000])}
+
+
+def assault_soldier_green():
+    return {'neutral': Animation('neutral', [load_sprite("assault_soldier_neutral")], [1234])}

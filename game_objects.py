@@ -5,7 +5,7 @@ import asset_factory
 class GameObject:
     gravity = 2.3
 
-    def __init__(self, hitbox=None, initial_vel=(0, 0), move_speed=0,
+    def __init__(self, hitbox=None, initial_vel=(0, 0), move_speed=0, drag=0.03,
                  animations=None, initial_animation="neutral", image_offset=(0, 0)):
         self.hitbox = hitbox
         self.x_vel, self.y_vel = initial_vel
@@ -14,6 +14,8 @@ class GameObject:
         self.animation_timer = 0
         self.animation = animations[initial_animation]
         self.image_offset = image_offset
+        self.in_air = False
+        self.drag = drag
 
     @property
     def x(self):
@@ -49,6 +51,43 @@ class GameObject:
     def image_y(self):
         return self.y + self.image_offset[1]
 
+    def update_pos(self, dt, terrain):
+        new_x = self.x + dt * self.x_vel
+        new_y = self.y + dt * self.y_vel
+        moved_x_hb = self.hitbox.copy()
+        moved_x_hb.x = new_x
+
+        moved_y_hb = self.hitbox.copy()
+        moved_y_hb.y = new_y
+
+        x_ok, y_ok = True, True
+
+        for hb in [terrain_object.hitbox for terrain_object in terrain]:
+            if hb.top < self.hitbox.bottom and hb.bottom > self.hitbox.top:
+                if moved_x_hb.left < hb.left <= moved_x_hb.right:
+                    self.hitbox.right = hb.left
+                    self.x_vel = 0
+                    x_ok = False
+                elif moved_x_hb.right > hb.right >= moved_x_hb.left:
+                    self.hitbox.left = hb.right
+                    self.x_vel = 0
+                    x_ok = False
+
+            if hb.left < self.hitbox.right and hb.right > self.hitbox.left:
+                if moved_y_hb.top < hb.top <= moved_y_hb.bottom:
+                    self.hitbox.bottom = hb.top
+                    self.y_vel = 0
+                    self.in_air = False
+                    y_ok = False
+                elif moved_y_hb.bottom > hb.bottom > moved_y_hb.top:
+                    self.hitbox.top = hb.bottom
+                    self.y_vel = 0
+                    y_ok = False
+        if x_ok:
+            self.x = new_x
+        if y_ok:
+            self.y = new_y
+
 
 class Controls:
     up = pygame.K_w
@@ -57,8 +96,6 @@ class Controls:
 
 
 class Player(GameObject):
-    drag = 0.03
-
     def __init__(self,
                  initial_pos=(0, 0),
                  initial_vel=(0, 0),
@@ -68,15 +105,28 @@ class Player(GameObject):
                          move_speed=7,
                          animations=asset_factory.load_player_animations(),
                          initial_animation=initial_animation,
-                         image_offset=(-23, -5))
+                         image_offset=(-23, -5),
+                         drag=0.03)
         self.jetpack_power = 5.5
-        self.in_air = False
+
+    def update(self, pressed, dt, terrain):
+        self.update_velocity(pressed, dt)
+
+        current_player_animation = "neutral"
+        if self.in_air:
+            if pressed[pygame.K_a]:
+                current_player_animation = "fly_left"
+            elif pressed[pygame.K_d]:
+                current_player_animation = "fly_right"
+            elif pressed[pygame.K_w]:
+                current_player_animation = "fly_neutral"
+        self.update_animation(current_player_animation)
+        self.update_pos(dt, terrain)
 
     def update_velocity(self, inputs, dt):
         if inputs[Controls.up]:
             self.y_vel -= dt * self.jetpack_power
             self.in_air = True
-
         self.y_vel = self.y_vel + dt * GameObject.gravity
         self.y_vel -= self.drag * self.y_vel * dt
 
