@@ -45,17 +45,17 @@ def update(game_state):
 
     for hb in [terrain_object.hitbox for terrain_object in game_state['terrain']]:
         if hb.top < player.hitbox.bottom and hb.bottom > player.hitbox.top:
-            if moved_x_hb.left < hb.left < moved_x_hb.right:
+            if moved_x_hb.left < hb.left <= moved_x_hb.right:
                 player.hitbox.right = hb.left
                 player.x_vel = 0
                 x_ok = False
-            elif moved_x_hb.right > hb.right > moved_x_hb.left:
+            elif moved_x_hb.right > hb.right >= moved_x_hb.left:
                 player.hitbox.left = hb.right
                 player.x_vel = 0
                 x_ok = False
 
         if hb.left < player.hitbox.right and hb.right > player.hitbox.left:
-            if moved_y_hb.top < hb.top < moved_y_hb.bottom:
+            if moved_y_hb.top < hb.top <= moved_y_hb.bottom:
                 player.hitbox.bottom = hb.top
                 player.y_vel = 0
                 player.in_air = False
@@ -115,7 +115,8 @@ def main():
     terrain = [GameObject(pygame.Rect(-200, 0, 900, 50), animations=asset_factory.wall_animation(900, 50)),
                GameObject(pygame.Rect(-200, 800, 900, 15), animations=asset_factory.wall_animation(900, 15)),
                GameObject(pygame.Rect(-200, 0, 20, 800), animations=asset_factory.wall_animation(20, 800)),
-               GameObject(pygame.Rect(700, 0, 50, 800), animations=asset_factory.wall_animation(50, 800))]
+               GameObject(pygame.Rect(700, 0, 50, 800), animations=asset_factory.wall_animation(50, 800)),
+               GameObject(pygame.Rect(300, 300, 50, 50), animations=asset_factory.wall_animation(50, 50))]
 
     game_state = {
         "player": Player(initial_pos=(1, 1),

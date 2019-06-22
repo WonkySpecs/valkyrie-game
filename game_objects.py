@@ -49,6 +49,12 @@ class GameObject:
         return self.y + self.image_offset[1]
 
 
+class Controls:
+    up = pygame.K_w
+    left = pygame.K_a
+    right = pygame.K_d
+
+
 class Player(GameObject):
     drag = 0.03
 
@@ -67,23 +73,25 @@ class Player(GameObject):
         self.in_air = False
 
     def update_velocity(self, inputs, dt):
-        if inputs[pygame.K_w]:
+        if inputs[Controls.up]:
             self.y_vel -= dt * self.jetpack_power
             self.in_air = True
 
-        if self.in_air:
-            if inputs[pygame.K_a]:
-                self.x_vel -= dt * self.jetpack_power / 3
-            elif inputs[pygame.K_d]:
-                self.x_vel += dt * self.jetpack_power / 3
-        else:
-            if inputs[pygame.K_a]:
-                self.x_vel = -self.move_speed
-            elif inputs[pygame.K_d]:
-                self.x_vel = self.move_speed
-            else:
-                self.x_vel = 0
         self.y_vel = self.y_vel + dt * GameObject.gravity
-
-        self.x_vel -= self.drag * self.x_vel * dt
         self.y_vel -= self.drag * self.y_vel * dt
+
+        if self.in_air:
+            x_accel_sum = 0
+            if inputs[Controls.left]:
+                x_accel_sum -= dt * self.jetpack_power / 3
+            if inputs[Controls.right]:
+                x_accel_sum += dt * self.jetpack_power / 3
+            self.x_vel += x_accel_sum
+            self.x_vel -= self.drag * self.x_vel * dt
+        else:
+            x_vel_sum = 0
+            if inputs[Controls.left]:
+                x_vel_sum -= self.move_speed
+            if inputs[Controls.right]:
+                x_vel_sum += self.move_speed
+            self.x_vel = x_vel_sum
