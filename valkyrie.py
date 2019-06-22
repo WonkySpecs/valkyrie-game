@@ -2,14 +2,14 @@ import pygame
 from game_objects import GameObject, Player
 import enemy_classes
 import asset_factory
+import random
 
-SCREEN_WIDTH = 640
-SCREEN_HEIGHT = 480
+SCREEN_WIDTH = 960
+SCREEN_HEIGHT = 720
 
-MAX_FPS = 600
+MAX_FPS = 6000
 
 DEBUG = True
-
 
 def update(game_state):
     player = game_state["player"]
@@ -73,7 +73,7 @@ def draw(screen, game_state):
 
     for terrain_object in game_state['terrain']:
         screen.blit(terrain_object.get_sprite(),
-                    calc_screen_position(pygame.Vector2(terrain_object.x, terrain_object.y)))
+                    calc_screen_position(pygame.Vector2(terrain_object.image_x, terrain_object.image_y)))
 
     for enemy in game_state['enemies']:
         screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.image_x, enemy.image_y)))
@@ -103,9 +103,8 @@ def main():
                GameObject(pygame.Rect(700, 0, 50, 800), animations=asset_factory.wall_animation(50, 800)),
                GameObject(pygame.Rect(300, 300, 50, 50), animations=asset_factory.wall_animation(50, 50))]
     game_state = {
-        "player": Player(initial_pos=(1, 1),
-                         initial_vel=(0, 0)),
-        "enemies": [enemy_classes.AssaultSoldier((50 + x, 300), (0, -30)) for x in range(50, 600, 25)],
+        "player": Player(initial_pos=(320, 50)),
+        "enemies": [enemy_classes.AssaultSoldier((50 + x, 500), (random.randint(-5, 5), -30)) for x in range(50, 600, 25)],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,

@@ -7,7 +7,7 @@ _sprite_folder = "sprites"
 
 
 def load_sprite(sprite_file_name, extension="png"):
-    return pygame.image.load(os.path.join(_asset_root_folder, _sprite_folder, sprite_file_name + "." + extension))
+    return pygame.image.load(os.path.join(_asset_root_folder, _sprite_folder, sprite_file_name + "." + extension)).convert_alpha()
 
 
 def load_player_animations():
@@ -25,7 +25,7 @@ def load_player_animations():
 
 
 def get_background():
-    return pygame.transform.scale(pygame.image.load(os.path.join(_asset_root_folder, "bg.jpg")), (1600, 1200))
+    return pygame.transform.scale(pygame.image.load(os.path.join(_asset_root_folder, "bg.jpg")).convert_alpha(), (1600, 1200))
 
 
 def wall_animation(width, height):

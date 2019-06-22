@@ -1,6 +1,7 @@
 from game_objects import GameObject
 import asset_factory
 import pygame
+import random
 
 
 class AssaultSoldier(GameObject):
@@ -18,3 +19,5 @@ class AssaultSoldier(GameObject):
     def update_velocity(self, dt):
         self.y_vel = self.y_vel + dt * GameObject.gravity
         self.y_vel -= self.drag * self.y_vel * dt
+        if not self.in_air and random.random() > 0.999:
+            self.x_vel *= -1
