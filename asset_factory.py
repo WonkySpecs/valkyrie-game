@@ -33,4 +33,6 @@ def wall_animation(width, height):
 
 
 def assault_soldier_green():
-    return {'neutral': Animation('neutral', [load_sprite("assault_soldier_neutral")], [1234])}
+    neutral = load_sprite("assault_soldier_neutral")
+    return {'face_right': Animation('face_right', [neutral], [1234]),
+            'face_left': Animation('face_left', [pygame.transform.flip(neutral, True, False)], [1234])}

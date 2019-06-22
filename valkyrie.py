@@ -11,6 +11,7 @@ MAX_FPS = 6000
 
 DEBUG = True
 
+
 def update(game_state):
     player = game_state["player"]
 
@@ -19,8 +20,7 @@ def update(game_state):
     player.update(pressed, dt, game_state['terrain'])
 
     for enemy in game_state['enemies']:
-        enemy.update_velocity(dt)
-        enemy.update_pos(dt, game_state['terrain'])
+        enemy.update(dt, game_state['terrain'])
 
     if pygame.mouse.get_pressed()[0]:
         # Gives pos in screen, need to convert to world. Tough with moving camera center :/
@@ -104,7 +104,9 @@ def main():
                GameObject(pygame.Rect(300, 300, 50, 50), animations=asset_factory.wall_animation(50, 50))]
     game_state = {
         "player": Player(initial_pos=(320, 50)),
-        "enemies": [enemy_classes.AssaultSoldier((50 + x, 500), (random.randint(-5, 5), -30)) for x in range(50, 600, 25)],
+        "enemies": [enemy_classes.AssaultSoldier((50 + x, 500),
+                                                 (0, -30),
+                                                 move_speed=random.randint(-5, 5)) for x in range(50, 600, 25)],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,

@@ -13,11 +13,20 @@ class AssaultSoldier(GameObject):
                          initial_vel=initial_vel,
                          move_speed=move_speed,
                          animations=asset_factory.assault_soldier_green(),
-                         initial_animation='neutral',
+                         initial_animation='face_right',
                          image_offset=(-12, -9))
+
+    def update(self, dt, terrain):
+        self.update_velocity(dt)
+        if self.move_speed > 0:
+            self.update_animation("face_right")
+        else:
+            self.update_animation("face_left")
+        self.update_pos(dt, terrain)
 
     def update_velocity(self, dt):
         self.y_vel = self.y_vel + dt * GameObject.gravity
         self.y_vel -= self.drag * self.y_vel * dt
+        self.x_vel = self.move_speed
         if not self.in_air and random.random() > 0.999:
-            self.x_vel *= -1
+            self.move_speed *= -1
