@@ -39,10 +39,29 @@ def rect_to_pointlist(rect, coordinate_convert_func):
     return [coordinate_convert_func(pygame.Vector2(corner)) for corner in corners]
 
 
+def aim_camera(last, aim, tracking_speed):
+    if not last:
+        return aim
+
+    if aim.x > last.x:
+        new_aim_x = min(last.x + tracking_speed, aim.x)
+    else:
+        new_aim_x = max(last.x - tracking_speed, aim.x)
+
+    if aim.y > last.y:
+        new_aim_y = min(last.y + tracking_speed, aim.y)
+    else:
+        new_aim_y = max(last.y - tracking_speed, aim.y)
+
+    return pygame.Vector2(new_aim_x, new_aim_y)
+
+
 def draw(screen, game_state):
     player = game_state["player"]
     screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    camera_center = pygame.math.Vector2(player.x, player.y - 80)
+    camera_aim = pygame.math.Vector2(player.x, player.y)
+    camera_center = aim_camera(game_state['last_camera_center'], camera_aim, 5)
+    game_state['last_camera_center'] = camera_center
 
     def calc_screen_position(point):
         return get_screen_coordinate(screen_center, camera_center, point)
@@ -51,9 +70,11 @@ def draw(screen, game_state):
 
     for bg_image, bg_top_left in game_state["backgrounds"]:
         screen.blit(bg_image, calc_screen_position(bg_top_left))
+
     for terrain_object in game_state['terrain']:
         screen.blit(terrain_object.get_sprite(),
                     calc_screen_position(pygame.Vector2(terrain_object.x, terrain_object.y)))
+
     for enemy in game_state['enemies']:
         screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.image_x, enemy.image_y)))
 
@@ -89,7 +110,8 @@ def main():
         "buttons_held": [],
         "terrain": terrain,
         "clock": clock,
-        "hud_font": pygame.font.Font(None, 20)
+        "hud_font": pygame.font.Font(None, 20),
+        "last_camera_center": None
     }
 
     running = True
