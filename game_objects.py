@@ -103,11 +103,12 @@ class Player(GameObject):
     def __init__(self,
                  initial_pos=(0, 0),
                  initial_vel=(0, 0),
+                 animations=None,
                  initial_animation="neutral"):
         super().__init__(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 20, 48),
                          initial_vel=initial_vel,
                          move_speed=7,
-                         animations=asset_factory.load_player_animations(),
+                         animations=animations,
                          initial_animation=initial_animation,
                          drag=0.03)
         self.jetpack_power = 5.5

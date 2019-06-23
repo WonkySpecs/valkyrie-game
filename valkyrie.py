@@ -1,7 +1,7 @@
 import pygame
 from game_objects import GameObject, Player
 import enemy_classes
-import asset_factory
+from asset_factory import AssetFactory
 import random
 
 SCREEN_WIDTH = 960
@@ -17,15 +17,16 @@ def update(game_state):
 
     pressed = pygame.key.get_pressed()
     dt = game_state['clock'].tick(MAX_FPS) / 30
-    player.update(pressed, dt, game_state['terrain'])
 
-    for enemy in game_state['enemies']:
-        enemy.update(dt, game_state['terrain'])
+    player.update(pressed, dt, game_state['terrain'])
 
     if pygame.mouse.get_pressed()[0]:
         # Gives pos in screen, need to convert to world. Tough with moving camera center :/
         # Camera center will need to be in game_state (needs to be somewhere anyway to know how to move) so can do :)
         print(pygame.mouse.get_pos())
+
+    for enemy in game_state['enemies']:
+        enemy.update(dt, game_state['terrain'])
 
 
 def get_screen_coordinate(screen_center, camera_center, point):
@@ -95,18 +96,21 @@ def main():
 
     window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Valkyrie")
-    bg_sprite = asset_factory.get_background()
+    assets = AssetFactory()
+    bg_sprite = assets.get_background()
     clock = pygame.time.Clock()
-    terrain = [GameObject(pygame.Rect(-200, 0, 900, 50), animations=asset_factory.wall_animation(900, 50)),
-               GameObject(pygame.Rect(-200, 800, 900, 15), animations=asset_factory.wall_animation(900, 15)),
-               GameObject(pygame.Rect(-200, 0, 20, 800), animations=asset_factory.wall_animation(20, 800)),
-               GameObject(pygame.Rect(700, 0, 50, 800), animations=asset_factory.wall_animation(50, 800)),
-               GameObject(pygame.Rect(300, 300, 50, 50), animations=asset_factory.wall_animation(50, 50))]
+    terrain = [GameObject(pygame.Rect(-200, 0, 900, 50), animations=assets.wall_animation(900, 50)),
+               GameObject(pygame.Rect(-200, 800, 900, 15), animations=assets.wall_animation(900, 15)),
+               GameObject(pygame.Rect(-200, 0, 20, 800), animations=assets.wall_animation(20, 800)),
+               GameObject(pygame.Rect(700, 0, 50, 800), animations=assets.wall_animation(50, 800)),
+               GameObject(pygame.Rect(300, 300, 50, 50), animations=assets.wall_animation(50, 50))]
     game_state = {
-        "player": Player(initial_pos=(320, 50)),
+        "player": Player(initial_pos=(320, 50), animations=assets.player_animations()),
         "enemies": [enemy_classes.AssaultSoldier((50 + x, 500),
                                                  (0, -30),
-                                                 move_speed=random.randint(-5, 5)) for x in range(50, 600, 25)],
+                                                 move_speed=random.randint(-5, 5),
+                                                 animations=assets.assault_soldier_green())
+                    for x in range(50, 600, 25)],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,

@@ -1,5 +1,4 @@
 from game_objects import GameObject
-import asset_factory
 import pygame
 import random
 
@@ -8,11 +7,12 @@ class AssaultSoldier(GameObject):
     def __init__(self,
                  initial_pos=None,
                  initial_vel=(0, 0),
-                 move_speed=5):
+                 move_speed=5,
+                 animations=None):
         super().__init__(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 24, 50),
                          initial_vel=initial_vel,
                          move_speed=move_speed,
-                         animations=asset_factory.assault_soldier_green(),
+                         animations=animations,
                          initial_animation='face_right')
 
     def update(self, dt, terrain):
