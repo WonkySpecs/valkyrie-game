@@ -16,7 +16,7 @@ def update(game_state):
     player = game_state["player"]
 
     pressed = pygame.key.get_pressed()
-    dt = game_state['clock'].tick(MAX_FPS) / 20
+    dt = game_state['clock'].tick(MAX_FPS) / 30
     player.update(pressed, dt, game_state['terrain'])
 
     for enemy in game_state['enemies']:
