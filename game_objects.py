@@ -104,7 +104,8 @@ class Player(GameObject):
                  initial_pos=(0, 0),
                  initial_vel=(0, 0),
                  animations=None,
-                 initial_animation="neutral"):
+                 initial_animation="neutral",
+                 fire_gun=None):
         super().__init__(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 20, 48),
                          initial_vel=initial_vel,
                          move_speed=7,
@@ -112,6 +113,9 @@ class Player(GameObject):
                          initial_animation=initial_animation,
                          drag=0.03)
         self.jetpack_power = 5.5
+        self.shoot_delay = 2
+        self.till_next_shot = 0
+        self.fire_gun = fire_gun
 
     def update(self, pressed, dt, terrain):
         self.update_velocity(pressed, dt)
@@ -126,6 +130,7 @@ class Player(GameObject):
                 current_player_animation = "fly_neutral"
         self.update_animation(current_player_animation)
         self.update_pos(dt, terrain)
+        self.till_next_shot -= dt
 
     def update_velocity(self, inputs, dt):
         if inputs[Controls.up]:
@@ -149,3 +154,8 @@ class Player(GameObject):
             if inputs[Controls.right]:
                 x_vel_sum += self.move_speed
             self.x_vel = x_vel_sum
+
+    def shoot_at(self, target_pos):
+        if self.till_next_shot <= 0:
+            self.till_next_shot = self.shoot_delay
+            return self.fire_gun(target_pos, pygame.Vector2(self.x + 32, self.y + 34))

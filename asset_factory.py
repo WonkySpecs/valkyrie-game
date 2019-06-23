@@ -10,7 +10,7 @@ _sprites_to_load = [
     'player_neutral',
     'assault_soldier_neutral',
     'black',
-    'yellow_pixel'
+    'yellow_bullet'
 ]
 
 
@@ -57,3 +57,6 @@ class AssetFactory:
         neutral = self.get_sprite("assault_soldier_neutral")
         return {'face_right': Animation('face_right', [neutral], [1234], [(-12, -9)]),
                 'face_left': Animation('face_left', [transform.flip(neutral, True, False)], [1234], [(-27, -9)])}
+
+    def yellow_bullet(self):
+        return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000])}

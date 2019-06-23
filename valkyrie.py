@@ -3,6 +3,7 @@ from game_objects import GameObject, Player
 import enemy_classes
 from asset_factory import AssetFactory
 import random
+import math
 
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 720
@@ -21,12 +22,18 @@ def update(game_state):
     player.update(pressed, dt, game_state['terrain'])
 
     if pygame.mouse.get_pressed()[0]:
-        # Gives pos in screen, need to convert to world. Tough with moving camera center :/
-        # Camera center will need to be in game_state (needs to be somewhere anyway to know how to move) so can do :)
-        print(pygame.mouse.get_pos())
+        mx, my = pygame.mouse.get_pos()
+        offset = pygame.Vector2(mx - SCREEN_WIDTH // 2, my - SCREEN_HEIGHT // 2)
+        mouse_world_pos = game_state['last_camera_center'] + offset
+        new_proj = player.shoot_at(mouse_world_pos)
+        if new_proj:
+            game_state['player_projectiles'].append(new_proj)
 
     for enemy in game_state['enemies']:
         enemy.update(dt, game_state['terrain'])
+
+    for proj in game_state['player_projectiles']:
+        proj.update_pos(dt, terrain=[])
 
 
 def get_screen_coordinate(screen_center, camera_center, point):
@@ -81,6 +88,10 @@ def draw(screen, game_state):
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.image_x, player.image_y)))
 
+    for projectile in game_state['player_projectiles']:
+        screen.blit(projectile.get_sprite(),
+                    calc_screen_position(pygame.Vector2(projectile.image_x, projectile.image_y)))
+
     if DEBUG:
         pygame.draw.polygon(screen, (0, 255, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
         for enemy in game_state['enemies']:
@@ -104,13 +115,26 @@ def main():
                GameObject(pygame.Rect(-200, 0, 20, 800), animations=assets.wall_animation(20, 800)),
                GameObject(pygame.Rect(700, 0, 50, 800), animations=assets.wall_animation(50, 800)),
                GameObject(pygame.Rect(300, 300, 50, 50), animations=assets.wall_animation(50, 50))]
+
+    def fire_gun(target_pos, start_pos):
+        h = target_pos - start_pos
+        print(h)
+        theta = math.atan2(h.y, h.x)
+        x_vel = 40 * math.cos(theta)
+        y_vel = 40 * math.sin(theta)
+        return GameObject(hitbox=pygame.Rect(start_pos.x, start_pos.y, 3, 3),
+                          initial_vel=(x_vel, y_vel),
+                          animations=assets.yellow_bullet())
+
     game_state = {
-        "player": Player(initial_pos=(320, 50), animations=assets.player_animations()),
+        "player": Player(initial_pos=(320, 50), animations=assets.player_animations(), fire_gun=fire_gun),
         "enemies": [enemy_classes.AssaultSoldier((50 + x, 500),
                                                  (0, -30),
                                                  move_speed=random.randint(-5, 5),
                                                  animations=assets.assault_soldier_green())
                     for x in range(50, 600, 25)],
+        "player_projectiles": [],
+        "enemy_projectiles": [],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
         "buttons_held": [],
         "terrain": terrain,
