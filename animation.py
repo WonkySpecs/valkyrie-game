@@ -26,3 +26,9 @@ class Animation:
     def reset(self):
         self.frame_count = 0
         self.sprite_num = 0
+
+    def __copy__(self):
+        return Animation(self.name,
+                         [s.copy() for s in self.sprites],
+                         self.durations.copy(),
+                         self.image_offsets.copy())

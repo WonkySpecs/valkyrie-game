@@ -10,7 +10,10 @@ _sprites_to_load = [
     'player_neutral',
     'assault_soldier_neutral',
     'black',
-    'yellow_bullet'
+    'yellow_bullet',
+    'worm_head_1',
+    'worm_head_2',
+    'worm_segment'
 ]
 
 
@@ -60,3 +63,13 @@ class AssetFactory:
 
     def yellow_bullet(self):
         return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000])}
+
+    def worm(self):
+        head_sprites = [self.get_sprite('worm_head_1'), self.get_sprite('worm_head_2')]
+        head_durations = [25 for _ in head_sprites]
+        animations = [Animation('head_up', head_sprites, head_durations),
+                      Animation('head_right', [transform.rotate(s, -90) for s in head_sprites], head_durations),
+                      Animation('head_down', [transform.rotate(s, 180) for s in head_sprites], head_durations),
+                      Animation('head_left', [transform.rotate(s, 90) for s in head_sprites], head_durations),
+                      Animation('segment', [self.get_sprite('worm_segment')], [1000])]
+        return {a.name: a for a in animations }
