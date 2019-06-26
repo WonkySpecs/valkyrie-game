@@ -72,4 +72,4 @@ class AssetFactory:
                       Animation('head_down', [transform.rotate(s, 180) for s in head_sprites], head_durations),
                       Animation('head_left', [transform.rotate(s, 90) for s in head_sprites], head_durations),
                       Animation('segment', [self.get_sprite('worm_segment')], [1000])]
-        return {a.name: a for a in animations }
+        return {a.name: a for a in animations}

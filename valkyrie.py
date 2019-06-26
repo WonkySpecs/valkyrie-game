@@ -8,10 +8,11 @@ import math
 SCREEN_WIDTH = 960
 SCREEN_HEIGHT = 720
 
-MAX_FPS = 6000
+MAX_FPS = 500
 
 DEBUG = True
 
+x = 0
 
 def update(game_state):
     player = game_state["player"]
@@ -20,17 +21,22 @@ def update(game_state):
     dt = game_state['clock'].tick(MAX_FPS) / 30
 
     player.update(pressed, dt, game_state['terrain'])
+    global x
+    x += 1
 
     if pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
         offset = pygame.Vector2(mx - SCREEN_WIDTH // 2, my - SCREEN_HEIGHT // 2)
         mouse_world_pos = game_state['last_camera_center'] + offset
+        if x > 100:
+            game_state['enemies'].append(enemy_classes.Worm(initial_pos=(mouse_world_pos.x, mouse_world_pos.y), animations=AssetFactory().worm()))
+            x = 0
         new_proj = player.shoot_at(mouse_world_pos)
         if new_proj:
             game_state['player_projectiles'].append(new_proj)
 
     for enemy in game_state['enemies']:
-        enemy.update(dt, game_state['terrain'])
+        enemy.update(dt, game_state['terrain'], (player.x, player.y))
 
     for proj in game_state['player_projectiles']:
         proj.update_pos(dt, terrain=[])
@@ -84,7 +90,7 @@ def draw(screen, game_state):
                     calc_screen_position(pygame.Vector2(terrain_object.image_x, terrain_object.image_y)))
 
     for enemy in game_state['enemies']:
-        screen.blit(enemy.get_sprite(), calc_screen_position(pygame.Vector2(enemy.image_x, enemy.image_y)))
+        screen.blits([(image, calc_screen_position(pos)) for image, pos in enemy.get_sprites()])
 
     screen.blit(player.get_sprite(), calc_screen_position(pygame.Vector2(player.image_x, player.image_y)))
 
@@ -118,7 +124,6 @@ def main():
 
     def fire_gun(target_pos, start_pos):
         h = target_pos - start_pos
-        print(h)
         theta = math.atan2(h.y, h.x)
         x_vel = 40 * math.cos(theta)
         y_vel = 40 * math.sin(theta)
@@ -128,11 +133,12 @@ def main():
 
     game_state = {
         "player": Player(initial_pos=(320, 50), animations=assets.player_animations(), fire_gun=fire_gun),
-        "enemies": [enemy_classes.AssaultSoldier((50 + x, 500),
-                                                 (0, -30),
-                                                 move_speed=random.randint(-5, 5),
-                                                 animations=assets.assault_soldier_green())
-                    for x in range(50, 600, 25)],
+        "enemies": [*[enemy_classes.AssaultSoldier((50 + x, 500),
+                                                   (0, -30),
+                                                   move_speed=random.randint(-5, 5),
+                                                   animations=assets.assault_soldier_green())
+                      for x in range(50, 600, 25)],
+                    enemy_classes.Worm(initial_pos=(0, 500), animations=assets.worm())],
         "player_projectiles": [],
         "enemy_projectiles": [],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
