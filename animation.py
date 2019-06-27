@@ -1,12 +1,15 @@
+import pygame
+
+
 class Animation:
-    def __init__(self, name, sprites, durations, image_offsets=None):
+    def __init__(self, name, frames, durations, offsets=None):
         self.name = name
-        self.sprites = sprites
+        self.frames = frames
         self.durations = durations
         self.frame_count = 0
         self.sprite_num = 0
         self.total_duration = sum(durations)
-        self.image_offsets = image_offsets if image_offsets else [(0, 0) for _ in sprites]
+        self.offsets = offsets if offsets else [pygame.Vector2(0, 0) for _ in frames]
 
     def next_frame(self):
         self.frame_count += 1
@@ -17,11 +20,11 @@ class Animation:
                 self.sprite_num += 1
 
     def get_current_sprite(self):
-        return self.sprites[self.sprite_num]
+        return self.frames[self.sprite_num]
 
     @property
     def image_offset(self):
-        return self.image_offsets[self.sprite_num]
+        return self.offsets[self.sprite_num]
 
     def reset(self):
         self.frame_count = 0
@@ -29,6 +32,6 @@ class Animation:
 
     def __copy__(self):
         return Animation(self.name,
-                         [s.copy() for s in self.sprites],
+                         [s.copy() for s in self.frames],
                          self.durations.copy(),
-                         self.image_offsets.copy())
+                         self.offsets.copy())

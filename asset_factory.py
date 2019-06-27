@@ -1,5 +1,5 @@
 import os
-from pygame import image, transform
+from pygame import image, transform, Vector2
 from animation import Animation
 
 _asset_root_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), "bin")
@@ -41,11 +41,22 @@ class AssetFactory:
                           self.get_sprite("player_neutral_flight_2"),
                           self.get_sprite("player_neutral_flight_3")]
         durations = [18 for _ in range(len(flight_sprites))]
-        animations = [Animation('neutral', [self.get_sprite("player_neutral")], [1234], [(-23, -5)]),
-                      Animation('fly_neutral', flight_sprites, durations, [(-23, -5)]),
-                      Animation('fly_left', [transform.rotate(s, 20) for s in flight_sprites], durations, [(-30, -15)]),
-                      Animation('fly_right', [transform.rotate(s, -20) for s in flight_sprites], durations,
-                                [(-25, -15)])]
+        animations = [Animation(name='neutral',
+                                frames=[self.get_sprite("player_neutral")],
+                                durations=[1234],
+                                offsets=[Vector2(-23, -5)]),
+                      Animation(name='fly_neutral',
+                                frames=flight_sprites,
+                                durations=durations,
+                                offsets=[(-23, -5) for _ in flight_sprites]),
+                      Animation(name='fly_left',
+                                frames=[transform.rotate(s, 20) for s in flight_sprites],
+                                durations=durations,
+                                offsets=[Vector2(-30, -15) for _ in flight_sprites]),
+                      Animation(name='fly_right',
+                                frames=[transform.rotate(s, -20) for s in flight_sprites],
+                                durations=durations,
+                                offsets=[Vector2(-25, -15) for _ in flight_sprites])]
         return {
             a.name: a for a in animations
         }
@@ -58,8 +69,8 @@ class AssetFactory:
 
     def assault_soldier_green(self):
         neutral = self.get_sprite("assault_soldier_neutral")
-        return {'face_right': Animation('face_right', [neutral], [1234], [(-12, -9)]),
-                'face_left': Animation('face_left', [transform.flip(neutral, True, False)], [1234], [(-27, -9)])}
+        return {'face_right': Animation('face_right', [neutral], [1234], [Vector2(-12, -9)]),
+                'face_left': Animation('face_left', [transform.flip(neutral, True, False)], [1234], [Vector2(-27, -9)])}
 
     def yellow_bullet(self):
         return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000])}

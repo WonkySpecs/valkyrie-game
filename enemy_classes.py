@@ -18,10 +18,8 @@ class AssaultSoldier(GameObject):
 
     def update(self, dt, terrain, player_pos):
         self.update_velocity(dt)
-        if self.move_speed > 0:
-            self.update_animation("face_right")
-        else:
-            self.update_animation("face_left")
+        animation = "face_right" if self.move_speed > 0 else "face_left"
+        super().update(dt, animation)
         self.update_pos(dt, terrain)
 
     def update_velocity(self, dt):
@@ -32,7 +30,7 @@ class AssaultSoldier(GameObject):
             self.move_speed *= -1
 
     def get_sprites(self):
-        return [(self.get_sprite(), pygame.Vector2(self.image_x, self.image_y))]
+        return [super().get_sprite()]
 
 
 class WormHead(GameObject):
@@ -59,7 +57,7 @@ class Worm:
             head_animation = 'head_left' if self.head.x_vel < 0 else 'head_right'
         else:
             head_animation = 'head_up' if self.head.y_vel < 0 else 'head_down'
-        self.head.update_animation(head_animation)
+        self.head.update(dt, head_animation)
         self.head.y += self.head.y_vel
         self.head.x += self.head.x_vel
         self.head.y_vel += 0.01
@@ -71,6 +69,6 @@ class Worm:
         self.pos_history.appendleft([(self.head.x, self.head.y), *[(s.x, s.y) for s in self.segments]])
 
     def get_sprites(self):
-        sprites = [(s.get_sprite(), pygame.Vector2(s.image_x, s.image_y)) for s in reversed(self.segments)]
-        sprites.append((self.head.get_sprite(), pygame.Vector2(self.head.image_x, self.head.image_y)))
+        sprites = [s.get_sprite() for s in reversed(self.segments)]
+        sprites.append(self.head.get_sprite())
         return sprites

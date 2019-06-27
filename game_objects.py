@@ -1,20 +1,42 @@
 import pygame
-import asset_factory
 
 
-class GameObject:
+class Sprite:
+    def __init__(self, animations,
+                 initial_animation='neutral',
+                 initial_pos=pygame.Vector2(0, 0)):
+        self.animations = animations
+        self.animation = self.animations[initial_animation]
+        self.image_pos = initial_pos
+
+    def update(self, dt, animation_name):
+        if not animation_name or (self.animation and self.animation.name is animation_name):
+            self.animation.next_frame()
+        else:
+            self.animation.reset()
+            self.animation = self.animations[animation_name]
+
+    def get_sprite(self):
+        return self.animation.get_current_sprite(), self.image_pos + self.animation.image_offset
+
+
+class GameObject(Sprite):
     gravity = 2.3
 
-    def __init__(self, hitbox=None, initial_vel=(0, 0), move_speed=0, drag=0.03,
-                 animations=None, initial_animation="neutral"):
+    def __init__(self,
+                 hitbox,
+                 animations,
+                 initial_vel=(0, 0),
+                 move_speed=0,
+                 drag=0.03,
+                 initial_animation="neutral"):
+        super().__init__(animations,
+                         initial_animation=initial_animation,
+                         initial_pos=pygame.Vector2(hitbox.left, hitbox.top))
         self.hitbox = hitbox
         self._exact_pos = pygame.Vector2(hitbox.left, hitbox.top)
         self.x_vel, self.y_vel = initial_vel
         self.move_speed = move_speed
-        self.animations = animations
-        self.animation_timer = 0
-        self.animation = animations[initial_animation]
-        self.image_offset = self.animation.image_offset
         self.in_air = False
         self.drag = drag
 
@@ -25,7 +47,7 @@ class GameObject:
     @x.setter
     def x(self, x):
         self._exact_pos.x = x
-        self.hitbox.left = round(x)
+        self.hitbox.left = self.image_pos.x = round(x)
 
     @property
     def y(self):
@@ -34,26 +56,7 @@ class GameObject:
     @y.setter
     def y(self, y):
         self._exact_pos.y = y
-        self.hitbox.top = round(y)
-
-    def update_animation(self, animation_name=None):
-        if not animation_name or (self.animation and self.animation.name is animation_name):
-            self.animation.next_frame()
-        else:
-            self.animation.reset()
-            self.animation = self.animations[animation_name]
-            self.image_offset = self.animation.image_offset
-
-    def get_sprite(self):
-        return self.animation.get_current_sprite()
-
-    @property
-    def image_x(self):
-        return self.x + self.image_offset[0]
-
-    @property
-    def image_y(self):
-        return self.y + self.image_offset[1]
+        self.hitbox.top = self.image_pos.y = round(y)
 
     def update_pos(self, dt, terrain):
         new_x = self.x + dt * self.x_vel
@@ -128,7 +131,7 @@ class Player(GameObject):
                 current_player_animation = "fly_right"
             elif pressed[pygame.K_w]:
                 current_player_animation = "fly_neutral"
-        self.update_animation(current_player_animation)
+        super().update(dt, current_player_animation)
         self.update_pos(dt, terrain)
         self.till_next_shot -= dt
 
