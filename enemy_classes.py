@@ -34,33 +34,31 @@ class AssaultSoldier(GameObject):
 
 
 class WormHead(GameObject):
-    pass
+    def update(self, dt, terrain, player_pos):
+        if abs(self.x_vel) > abs(self.y_vel):
+            animation = 'head_left' if self.x_vel < 0 else 'head_right'
+        else:
+            animation = 'head_up' if self.y_vel < 0 else 'head_down'
+        super().update(dt, animation)
+        self.y += self.y_vel
+        self.x += self.x_vel
+        self.y_vel += 0.01
 
 
 class Worm:
-    def __init__(self, initial_pos, animations):
+    def __init__(self, initial_pos, animations, length=10):
         self.head = WormHead(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 64, 64),
                              initial_vel=(random.random() * 8 - 4, -random.random() * 5),
-                             animations={'head_up': animations['head_up'],
-                                         'head_right': animations['head_right'],
-                                         'head_down': animations['head_down'],
-                                         'head_left': animations['head_left']},
+                             animations={n: animations[n] for n in animations.keys() if n.startswith("head_")},
                              initial_animation='head_up')
         self.segments = [GameObject(hitbox=pygame.Rect(initial_pos[0], initial_pos[1], 64, 64),
-                                    animations={'neutral': animations['segment']}) for _ in range(1, random.randint(5, 30))]
+                                    animations={'neutral': animations['segment']}) for _ in range(length)]
         self.image_offset = (0, 0)
         self.hitbox = self.head.hitbox
         self.pos_history = deque([[(self.head.x, self.head.y), *[(s.x, s.y) for s in self.segments]]])
 
     def update(self, dt, terrain, player_pos):
-        if abs(self.head.x_vel) > abs(self.head.y_vel):
-            head_animation = 'head_left' if self.head.x_vel < 0 else 'head_right'
-        else:
-            head_animation = 'head_up' if self.head.y_vel < 0 else 'head_down'
-        self.head.update(dt, head_animation)
-        self.head.y += self.head.y_vel
-        self.head.x += self.head.x_vel
-        self.head.y_vel += 0.01
+        self.head.update(dt, terrain, player_pos)
         if len(self.pos_history) > 8:
             update_to = self.pos_history.pop()
             for n, segment in enumerate(self.segments):

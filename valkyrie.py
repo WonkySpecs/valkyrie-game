@@ -32,7 +32,8 @@ def update(game_state):
         mouse_world_pos = game_state['last_camera_center'] + offset
         if x > 100:
             game_state['enemies'].append(enemy_classes.Worm(initial_pos=(mouse_world_pos.x, mouse_world_pos.y),
-                                                            animations=AssetFactory().worm()))
+                                                            animations=AssetFactory().worm(),
+                                                            length=random.randint(5, 50)))
             x = 0
         new_proj = player.shoot_at(mouse_world_pos)
         if new_proj:
@@ -75,8 +76,7 @@ def main():
                                                    (0, -30),
                                                    move_speed=random.randint(-5, 5),
                                                    animations=assets.assault_soldier_green())
-                      for x in range(50, 600, 25)],
-                    enemy_classes.Worm(initial_pos=(0, 500), animations=assets.worm())],
+                      for x in range(50, 600, 25)]],
         "player_projectiles": [],
         "enemy_projectiles": [],
         "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
