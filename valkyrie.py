@@ -2,6 +2,7 @@ import pygame
 from game_objects import GameObject, Player
 import enemy_classes
 from asset_factory import AssetFactory
+from game_state import GameState
 
 import random
 import math
@@ -17,33 +18,34 @@ x = 0
 
 
 def update(game_state):
-    player = game_state["player"]
+    player = game_state.player
 
     pressed = pygame.key.get_pressed()
-    dt = game_state['clock'].tick(MAX_FPS) / 30
+    dt = game_state.clock.tick(MAX_FPS) / 30
 
-    player.update(pressed, dt, game_state['terrain'])
+    player.update(pressed, dt, game_state.terrain)
     global x
     x += 1
 
     if pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
         offset = pygame.Vector2(mx - SCREEN_WIDTH // 2, my - SCREEN_HEIGHT // 2)
-        mouse_world_pos = game_state['last_camera_center'] + offset
+        mouse_world_pos = game_state.last_camera_center + offset
         if x > 100:
-            game_state['enemies'].append(enemy_classes.Worm(initial_pos=(mouse_world_pos.x, mouse_world_pos.y),
-                                                            animations=AssetFactory().worm(),
-                                                            length=random.randint(5, 50)))
+            game_state.enemies.append(enemy_classes.Worm(initial_pos=(mouse_world_pos.x, mouse_world_pos.y),
+                                                         animations=AssetFactory().worm(),
+                                                         length=random.randint(5, 50)))
             x = 0
+
         new_proj = player.shoot_at(mouse_world_pos)
         if new_proj:
-            game_state['player_projectiles'].append(new_proj)
+            game_state.player_projectiles.append(new_proj)
 
-    for enemy in game_state['enemies']:
-        enemy.update(dt, game_state['terrain'], (player.x, player.y))
+    for enemy in game_state.enemies:
+        enemy.update(dt, game_state.terrain, (player.x, player.y))
 
-    for proj in game_state['player_projectiles']:
-        proj.update_pos(dt, terrain=[])
+    for proj in game_state.player_projectiles:
+        proj.update_pos(dt, terrain=game_state.terrain)
 
 
 def main():
@@ -54,7 +56,6 @@ def main():
     pygame.display.set_caption("Valkyrie")
     assets = AssetFactory()
     bg_sprite = assets.get_background()
-    clock = pygame.time.Clock()
     terrain = [GameObject(pygame.Rect(-200, 0, 900, 50), animations=assets.wall_animation(900, 50)),
                GameObject(pygame.Rect(-200, 800, 900, 15), animations=assets.wall_animation(900, 15)),
                GameObject(pygame.Rect(-200, 0, 20, 800), animations=assets.wall_animation(20, 800)),
@@ -70,22 +71,18 @@ def main():
                           initial_vel=(x_vel, y_vel),
                           animations=assets.yellow_bullet())
 
-    game_state = {
-        "player": Player(initial_pos=(320, 50), animations=assets.player_animations(), fire_gun=fire_gun),
-        "enemies": [*[enemy_classes.AssaultSoldier((50 + x, 500),
-                                                   (0, -30),
-                                                   move_speed=random.randint(-5, 5),
-                                                   animations=assets.assault_soldier_green())
-                      for x in range(50, 600, 25)]],
-        "player_projectiles": [],
-        "enemy_projectiles": [],
-        "backgrounds": [(bg_sprite, pygame.Vector2(-350, -300))],
-        "buttons_held": [],
-        "terrain": terrain,
-        "clock": clock,
-        "hud_font": pygame.font.Font(None, 20),
-        "last_camera_center": None
-    }
+    state = GameState(
+        player=Player(initial_pos=(320, 50), animations=assets.player_animations(), fire_gun=fire_gun),
+        enemies=[*[enemy_classes.AssaultSoldier((50 + x, 500),
+                                                (0, -30),
+                                                move_speed=random.randint(-5, 5),
+                                                animations=assets.assault_soldier_green())
+                   for x in range(50, 600, 25)]],
+        terrain=terrain,
+        background_layers={0: [(bg_sprite, pygame.Vector2(-350, -300))]},
+        clock=pygame.time.Clock(),
+        hud={'font': pygame.font.Font(None, 20)}
+    )
 
     running = True
     while running:
@@ -95,8 +92,8 @@ def main():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 running = False
 
-        update(game_state)
-        draw(window, game_state)
+        update(state)
+        draw(window, state)
     pygame.quit()
 
 

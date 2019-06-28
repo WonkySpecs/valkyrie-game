@@ -32,39 +32,40 @@ def aim_camera(last, aim, tracking_speed):
 
 
 def draw(screen, game_state):
-    player = game_state["player"]
+    player = game_state.player
     screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
     camera_aim = pygame.math.Vector2(player.x, player.y)
-    camera_center = aim_camera(game_state['last_camera_center'], camera_aim, 5)
-    game_state['last_camera_center'] = camera_center
+    camera_center = aim_camera(game_state.last_camera_center, camera_aim, 5)
+    game_state.last_camera_center = camera_center
 
     def calc_screen_position(point):
         return get_screen_coordinate(screen_center, camera_center, point)
 
     screen.fill((123, 123, 123))
 
-    for bg_image, bg_top_left in game_state["backgrounds"]:
-        screen.blit(bg_image, calc_screen_position(bg_top_left))
+    for z in sorted(game_state.background_layers.keys()):
+        for bg_image, bg_top_left in game_state.background_layers[z]:
+            screen.blit(bg_image, calc_screen_position(bg_top_left))
 
-    for terrain_object in game_state['terrain']:
+    for terrain_object in game_state.terrain:
         img, pos = terrain_object.get_sprite()
         screen.blit(img, calc_screen_position(pos))
 
-    for enemy in game_state['enemies']:
+    for enemy in game_state.enemies:
         screen.blits([(image, calc_screen_position(pos)) for image, pos in enemy.get_sprites()])
 
     player_img, player_pos = player.get_sprite()
     screen.blit(player_img, calc_screen_position(player_pos))
 
-    for projectile in game_state['player_projectiles']:
+    for projectile in game_state.player_projectiles:
         img, pos = projectile.get_sprite()
         screen.blit(img, calc_screen_position(pos))
 
     if DEBUG:
         pygame.draw.polygon(screen, (0, 255, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
-        for enemy in game_state['enemies']:
+        for enemy in game_state.enemies:
             pygame.draw.polygon(screen, (255, 0, 0), rect_to_pointlist(enemy.hitbox, calc_screen_position), 1)
 
-    fps = game_state['hud_font'].render(f"{game_state['clock'].get_fps():.2f} fps", True, (0, 255, 0))
+    fps = game_state.hud['font'].render(f"{game_state.clock.get_fps():.2f} fps", True, (0, 255, 0))
     screen.blit(fps, (0, 0))
     pygame.display.update()
