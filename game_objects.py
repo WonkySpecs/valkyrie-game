@@ -181,3 +181,7 @@ class Projectile(Sprite):
         for t in terrain:
             if t.hitbox.colliderect(self.hitbox):
                 print("Hit wall")
+
+    def draw(self, surface, coordinate_map):
+        image, pos = self.get_sprite()
+        surface.blit(image, coordinate_map(pos))

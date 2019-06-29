@@ -57,8 +57,7 @@ def draw(screen, game_state):
     player.draw(screen, calc_screen_position)
 
     for projectile in game_state.player_projectiles:
-        img, pos = projectile.get_sprite()
-        screen.blit(img, calc_screen_position(pos))
+        projectile.draw(screen, calc_screen_position)
 
     if DEBUG:
         pygame.draw.polygon(screen, (0, 255, 0), rect_to_pointlist(player.hitbox, calc_screen_position), 1)
