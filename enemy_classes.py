@@ -44,22 +44,22 @@ class AssaultSoldier:
 
         for hb in [terrain_object.hitbox for terrain_object in terrain]:
             if hb.top < hitbox.bottom and hb.bottom > hitbox.top:
-                if moved_x_hb.left < hb.left <= moved_x_hb.right:
+                if self.x_vel > 0 and moved_x_hb.left < hb.left <= moved_x_hb.right:
                     hitbox.right = hb.left
                     self.x_vel = 0
                     x_ok = False
-                elif moved_x_hb.right > hb.right >= moved_x_hb.left:
+                elif self.x_vel < 0 and moved_x_hb.right > hb.right >= moved_x_hb.left:
                     hitbox.left = hb.right
                     self.x_vel = 0
                     x_ok = False
 
             if hb.left < hitbox.right and hb.right > hitbox.left:
-                if moved_y_hb.top < hb.top <= moved_y_hb.bottom:
+                if self.y_vel > 0 and moved_y_hb.top < hb.top <= moved_y_hb.bottom:
                     hitbox.bottom = hb.top
                     self.y_vel = 0
                     self.in_air = False
                     y_ok = False
-                elif moved_y_hb.bottom > hb.bottom > moved_y_hb.top:
+                elif self.y_vel < 0 and moved_y_hb.bottom > hb.bottom > moved_y_hb.top:
                     hitbox.top = hb.bottom
                     self.y_vel = 0
                     y_ok = False
