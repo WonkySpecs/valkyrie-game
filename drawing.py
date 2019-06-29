@@ -52,10 +52,9 @@ def draw(screen, game_state):
         screen.blit(img, calc_screen_position(pos))
 
     for enemy in game_state.enemies:
-        screen.blits([(image, calc_screen_position(pos)) for image, pos in enemy.get_sprites()])
+        enemy.draw(screen, calc_screen_position)
 
-    player_img, player_pos = player.get_sprite()
-    screen.blit(player_img, calc_screen_position(player_pos))
+    player.draw(screen, calc_screen_position)
 
     for projectile in game_state.player_projectiles:
         img, pos = projectile.get_sprite()

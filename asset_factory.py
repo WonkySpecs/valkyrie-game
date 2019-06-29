@@ -44,18 +44,22 @@ class AssetFactory:
         animations = [Animation(name='neutral',
                                 frames=[self.get_sprite("player_neutral")],
                                 durations=[1234],
+                                hitbox_size=Vector2(20, 48),
                                 offsets=[Vector2(-23, -5)]),
                       Animation(name='fly_neutral',
                                 frames=flight_sprites,
                                 durations=durations,
+                                hitbox_size=Vector2(20, 48),
                                 offsets=[(-23, -5) for _ in flight_sprites]),
                       Animation(name='fly_left',
                                 frames=[transform.rotate(s, 20) for s in flight_sprites],
                                 durations=durations,
+                                hitbox_size=Vector2(20, 48),
                                 offsets=[Vector2(-30, -15) for _ in flight_sprites]),
                       Animation(name='fly_right',
                                 frames=[transform.rotate(s, -20) for s in flight_sprites],
                                 durations=durations,
+                                hitbox_size=Vector2(20, 48),
                                 offsets=[Vector2(-25, -15) for _ in flight_sprites])]
         return {
             a.name: a for a in animations
@@ -65,22 +69,33 @@ class AssetFactory:
         return transform.scale(image.load(os.path.join(_asset_root_folder, "bg.jpg")).convert_alpha(), (1600, 1200))
 
     def wall_animation(self, width, height):
-        return {'neutral': Animation('neutral', [transform.scale(self.get_sprite("black"), (width, height))], [1000])}
+        return {'neutral': Animation('neutral',
+                                     [transform.scale(self.get_sprite("black"), (width, height))],
+                                     [1000],
+                                     Vector2(width, height))}
 
     def assault_soldier_green(self):
         neutral = self.get_sprite("assault_soldier_neutral")
-        return {'face_right': Animation('face_right', [neutral], [1234], [Vector2(-12, -9)]),
-                'face_left': Animation('face_left', [transform.flip(neutral, True, False)], [1234], [Vector2(-27, -9)])}
+        return {'face_right': Animation(name='face_right',
+                                        frames=[neutral],
+                                        durations=[1234],
+                                        hitbox_size=Vector2(24, 50),
+                                        offsets=[Vector2(-12, -9)]),
+                'face_left': Animation(name='face_left',
+                                       frames=[transform.flip(neutral, True, False)],
+                                       durations=[1234],
+                                       hitbox_size=Vector2(24, 50),
+                                       offsets=[Vector2(-27, -9)])}
 
     def yellow_bullet(self):
-        return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000])}
+        return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000], Vector2(3, 3))}
 
-    def worm(self):
-        head_sprites = [self.get_sprite('worm_head_1'), self.get_sprite('worm_head_2')]
-        head_durations = [25 for _ in head_sprites]
-        animations = [Animation('head_up', head_sprites, head_durations),
-                      Animation('head_right', [transform.rotate(s, -90) for s in head_sprites], head_durations),
-                      Animation('head_down', [transform.rotate(s, 180) for s in head_sprites], head_durations),
-                      Animation('head_left', [transform.rotate(s, 90) for s in head_sprites], head_durations),
-                      Animation('segment', [self.get_sprite('worm_segment')], [1000])]
-        return {a.name: a for a in animations}
+    # def worm(self):
+    #     head_sprites = [self.get_sprite('worm_head_1'), self.get_sprite('worm_head_2')]
+    #     head_durations = [25 for _ in head_sprites]
+    #     animations = [Animation('head_up', head_sprites, head_durations),
+    #                   Animation('head_right', [transform.rotate(s, -90) for s in head_sprites], head_durations),
+    #                   Animation('head_down', [transform.rotate(s, 180) for s in head_sprites], head_durations),
+    #                   Animation('head_left', [transform.rotate(s, 90) for s in head_sprites], head_durations),
+    #                   Animation('segment', [self.get_sprite('worm_segment')], [1000])]
+    #     return {a.name: a for a in animations}

@@ -2,13 +2,14 @@ import pygame
 
 
 class Animation:
-    def __init__(self, name, frames, durations, offsets=None):
+    def __init__(self, name, frames, durations, hitbox_size, offsets=None):
         self.name = name
         self.frames = frames
         self.durations = durations
         self.frame_count = 0
         self.sprite_num = 0
         self.total_duration = sum(durations)
+        self.hitbox_size = hitbox_size
         self.offsets = offsets or [pygame.Vector2(0, 0) for _ in frames]
 
     def next_frame(self):
