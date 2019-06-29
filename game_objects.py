@@ -23,6 +23,7 @@ class Sprite:
         self.image_pos = initial_pos
         self.hitbox = pygame.Rect(self.image_pos, self.animation.hitbox_size)
         self._exact_pos = [initial_pos.x, initial_pos.y]
+        self.to_remove = False
 
     def update(self, dt, animation_name=None):
         if not animation_name or (self.animation and self.animation.name is animation_name):
@@ -54,7 +55,42 @@ class Sprite:
         self.hitbox.top = self.image_pos.y = round(y)
 
 
-class BlockedByTerrain:
+class SingleSprite:
+    def __init__(self,
+                 animations,
+                 initial_pos,
+                 initial_animation='neutral'):
+        self.sprite = Sprite(animations=animations,
+                             initial_pos=initial_pos,
+                             initial_animation=initial_animation)
+        self.to_remove = False
+
+    def hit_by(self, proj):
+        return proj.hitbox.colliderect(self.sprite.hitbox)
+
+    def draw(self, surface, coordinate_map):
+        image, pos = self.sprite.get_sprite()
+        surface.blit(image, coordinate_map(pos))
+
+    @property
+    def x(self):
+        return self.sprite.x
+
+    @property
+    def y(self):
+        return self.sprite.y
+
+    @property
+    def hitbox(self):
+        return self.sprite.hitbox
+
+
+class Terrain(SingleSprite):
+    def take_damage(self, proj):
+        pass
+
+
+class BlockedByTerrain(SingleSprite):
     def update_pos(self, dt, terrain):
         hitbox = self.sprite.hitbox
         new_x = self.sprite.x + dt * self.x_vel
@@ -107,9 +143,9 @@ class Player(BlockedByTerrain):
                  animations=None,
                  initial_animation="neutral",
                  fire_gun=None):
-        self.sprite = Sprite(animations=animations,
-                             initial_pos=initial_pos,
-                             initial_animation=initial_animation)
+        super().__init__(animations=animations,
+                         initial_pos=initial_pos,
+                         initial_animation=initial_animation)
         self.x_vel, self.y_vel = initial_vel
         self.jetpack_power = 5.5
         self.shoot_delay = 2
@@ -118,6 +154,7 @@ class Player(BlockedByTerrain):
         self.drag = 0.03
         self.in_air = False
         self.move_speed = 7
+        self.health = 1000
 
     def update(self, pressed, dt, terrain):
         self.update_velocity(pressed, dt)
@@ -162,37 +199,31 @@ class Player(BlockedByTerrain):
             self.till_next_shot = self.shoot_delay
             return self.fire_gun(target_pos, pygame.Vector2(self.sprite.x + 32, self.sprite.y + 34))
 
-    def draw(self, surface, coordinate_map):
-        image, pos = self.sprite.get_sprite()
-        surface.blit(image, coordinate_map(pos))
-
-    @property
-    def x(self):
-        return self.sprite.x
-
-    @property
-    def y(self):
-        return self.sprite.y
-
-    @property
-    def hitbox(self):
-        return self.sprite.hitbox
+    def take_damage(self, proj):
+        self.health -= proj.damage
 
 
 class Projectile(Sprite):
-    def __init__(self, animations, initial_pos, initial_vel):
+    def __init__(self,
+                 animations,
+                 initial_pos,
+                 initial_vel,
+                 damage):
         super().__init__(animations, initial_pos=initial_pos)
         self.x_vel = initial_vel.x
         self.y_vel = initial_vel.y
+        self.damage = damage
 
-    def update(self, dt, terrain):
+    def update(self, dt, *targets):
         super().update(dt)
         self.x += self.x_vel * dt
         self.y += self.y_vel * dt
 
-        for t in terrain:
-            if t.hitbox.colliderect(self.hitbox):
-                print("Hit wall")
+        for target in targets:
+            if target.hit_by(self):
+                target.take_damage(self)
+                self.to_remove = True
+                break
 
     def draw(self, surface, coordinate_map):
         image, pos = self.get_sprite()

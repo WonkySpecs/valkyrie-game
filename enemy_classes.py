@@ -9,15 +9,16 @@ class AssaultSoldier(BlockedByTerrain):
                  initial_pos=None,
                  move_speed=5,
                  animations=None):
-        self.sprite = Sprite(animations=animations,
-                             initial_pos=initial_pos,
-                             initial_animation='face_right')
+        super().__init__(animations=animations,
+                         initial_pos=initial_pos,
+                         initial_animation='face_right')
         self.move_speed = move_speed
         self.moving_right = random.random() > 0.5
         self.x_vel = move_speed if self.moving_right else -move_speed
         self.y_vel = 0
         self.drag = 0.03
         self.in_air = False
+        self.health = 200
 
     def update(self, dt, terrain, player_pos):
         self.update_velocity(dt)
@@ -32,13 +33,10 @@ class AssaultSoldier(BlockedByTerrain):
         if not self.in_air and random.random() > 0.999:
             self.moving_right = not self.moving_right
 
-    def draw(self, surface, coordinate_map):
-        image, pos = self.sprite.get_sprite()
-        surface.blit(image, coordinate_map(pos))
-
-    @property
-    def hitbox(self):
-        return self.sprite.hitbox
+    def take_damage(self, proj):
+        self.health -= proj.damage
+        if self.health <= 0:
+            self.to_remove = True
 
 # class WormHead(GameObject):
 #     def update(self, dt, terrain, player_pos):

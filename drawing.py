@@ -47,9 +47,8 @@ def draw(screen, game_state):
         for bg_image, bg_top_left in game_state.background_layers[z]:
             screen.blit(bg_image, calc_screen_position(bg_top_left))
 
-    for terrain_object in game_state.terrain:
-        img, pos = terrain_object.get_sprite()
-        screen.blit(img, calc_screen_position(pos))
+    for terrain in game_state.terrain:
+        terrain.draw(screen, calc_screen_position)
 
     for enemy in game_state.enemies:
         enemy.draw(screen, calc_screen_position)

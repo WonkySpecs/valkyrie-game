@@ -1,5 +1,5 @@
 import pygame
-from game_objects import Sprite, Player, Projectile
+from game_objects import Player, Terrain, Projectile
 import enemy_classes
 from asset_factory import AssetFactory
 from game_state import GameState
@@ -15,7 +15,15 @@ MAX_FPS = 500
 DEBUG = True
 
 
+def remove_unneeded_objects(l):
+    l[:] = [e for e in l if not e.to_remove]
+
+
 def update(game_state):
+    for l in [game_state.player_projectiles,
+              game_state.enemy_projectiles,
+              game_state.enemies]:
+        remove_unneeded_objects(l)
     player = game_state.player
 
     pressed = pygame.key.get_pressed()
@@ -35,7 +43,7 @@ def update(game_state):
         enemy.update(dt, game_state.terrain, (player.x, player.y))
 
     for proj in game_state.player_projectiles:
-        proj.update(dt, terrain=game_state.terrain)
+        proj.update(dt, *game_state.terrain, *game_state.enemies)
 
 
 def main():
@@ -46,11 +54,11 @@ def main():
     pygame.display.set_caption("Valkyrie")
     assets = AssetFactory()
     bg_sprite = assets.get_background()
-    terrain = [Sprite(initial_pos=pygame.Vector2(-200, 0), animations=assets.wall_animation(900, 50)),
-               Sprite(initial_pos=pygame.Vector2(-200, 800), animations=assets.wall_animation(900, 15)),
-               Sprite(initial_pos=pygame.Vector2(-200, 0), animations=assets.wall_animation(20, 800)),
-               Sprite(initial_pos=pygame.Vector2(700, 0), animations=assets.wall_animation(50, 800)),
-               Sprite(initial_pos=pygame.Vector2(300, 300),  animations=assets.wall_animation(50, 50))]
+    terrain = [Terrain(initial_pos=pygame.Vector2(-200, 0), animations=assets.wall_animation(900, 50)),
+               Terrain(initial_pos=pygame.Vector2(-200, 800), animations=assets.wall_animation(900, 15)),
+               Terrain(initial_pos=pygame.Vector2(-200, 0), animations=assets.wall_animation(20, 800)),
+               Terrain(initial_pos=pygame.Vector2(700, 0), animations=assets.wall_animation(50, 800)),
+               Terrain(initial_pos=pygame.Vector2(300, 300),  animations=assets.wall_animation(50, 50))]
 
     def fire_gun(target_pos, start_pos):
         d_pos = target_pos - start_pos
@@ -59,7 +67,8 @@ def main():
         y_vel = 40 * math.sin(theta)
         return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
                           animations=assets.yellow_bullet(),
-                          initial_pos=start_pos)
+                          initial_pos=start_pos,
+                          damage=100)
 
     state = GameState(
         player=Player(animations=assets.player_animations(), initial_pos=pygame.Vector2(320, 50), fire_gun=fire_gun),
