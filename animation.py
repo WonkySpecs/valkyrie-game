@@ -9,7 +9,7 @@ class Animation:
         self.frame_count = 0
         self.sprite_num = 0
         self.total_duration = sum(durations)
-        self.offsets = offsets if offsets else [pygame.Vector2(0, 0) for _ in frames]
+        self.offsets = offsets or [pygame.Vector2(0, 0) for _ in frames]
 
     def next_frame(self):
         self.frame_count += 1
