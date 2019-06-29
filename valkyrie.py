@@ -53,8 +53,8 @@ def main():
                GameObject(pygame.Rect(300, 300, 50, 50), animations=assets.wall_animation(50, 50))]
 
     def fire_gun(target_pos, start_pos):
-        h = target_pos - start_pos
-        theta = math.atan2(h.y, h.x)
+        d_pos = target_pos - start_pos
+        theta = math.atan2(d_pos.y, d_pos.x)
         x_vel = 40 * math.cos(theta)
         y_vel = 40 * math.sin(theta)
         return GameObject(hitbox=pygame.Rect(start_pos.x, start_pos.y, 3, 3),
