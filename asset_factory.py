@@ -44,23 +44,23 @@ class AssetFactory:
         animations = [Animation(name='neutral',
                                 frames=[self.get_sprite("player_neutral")],
                                 durations=[1234],
-                                hitbox_size=Vector2(20, 48),
-                                offsets=[Vector2(-23, -5)]),
+                                hitbox_size=Vector2(18, 48),
+                                offsets=[Vector2(-25, -5)]),
                       Animation(name='fly_neutral',
                                 frames=flight_sprites,
                                 durations=durations,
-                                hitbox_size=Vector2(20, 48),
-                                offsets=[(-23, -5) for _ in flight_sprites]),
+                                hitbox_size=Vector2(18, 48),
+                                offsets=[(-25, -5) for _ in flight_sprites]),
                       Animation(name='fly_left',
                                 frames=[transform.rotate(s, 20) for s in flight_sprites],
                                 durations=durations,
-                                hitbox_size=Vector2(20, 48),
-                                offsets=[Vector2(-30, -15) for _ in flight_sprites]),
+                                hitbox_size=Vector2(25, 48),
+                                offsets=[Vector2(-29, -15) for _ in flight_sprites]),
                       Animation(name='fly_right',
                                 frames=[transform.rotate(s, -20) for s in flight_sprites],
                                 durations=durations,
-                                hitbox_size=Vector2(20, 48),
-                                offsets=[Vector2(-25, -15) for _ in flight_sprites])]
+                                hitbox_size=Vector2(25, 48),
+                                offsets=[Vector2(-28, -15) for _ in flight_sprites])]
         return {
             a.name: a for a in animations
         }
