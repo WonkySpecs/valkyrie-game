@@ -64,7 +64,7 @@ def main():
     state = GameState(
         player=Player(animations=assets.player_animations(), initial_pos=pygame.Vector2(320, 50), fire_gun=fire_gun),
         enemies=[*[enemy_classes.AssaultSoldier(initial_pos=pygame.Vector2(50 + x, 400),
-                                                move_speed=random.randint(-8, 8),
+                                                move_speed=random.randint(3, 6),
                                                 animations=assets.assault_soldier_green())
                    for x in range(50, 600, 25)]],
         terrain=terrain,

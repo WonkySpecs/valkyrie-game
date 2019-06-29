@@ -7,13 +7,14 @@ from collections import deque
 class AssaultSoldier(BlockedByTerrain):
     def __init__(self,
                  initial_pos=None,
-                 move_speed=15,
+                 move_speed=5,
                  animations=None):
         self.sprite = Sprite(animations=animations,
                              initial_pos=initial_pos,
                              initial_animation='face_right')
         self.move_speed = move_speed
-        self.x_vel = move_speed
+        self.moving_right = random.random() > 0.5
+        self.x_vel = move_speed if self.moving_right else -move_speed
         self.y_vel = 0
         self.drag = 0.03
         self.in_air = False
@@ -27,8 +28,9 @@ class AssaultSoldier(BlockedByTerrain):
     def update_velocity(self, dt):
         VelocityUpdates.gravity(self, dt)
         VelocityUpdates.drag(self, dt)
+        self.x_vel = self.move_speed if self.moving_right else -self.move_speed
         if not self.in_air and random.random() > 0.999:
-            self.x_vel *= -1
+            self.moving_right = not self.moving_right
 
     def draw(self, surface, coordinate_map):
         image, pos = self.sprite.get_sprite()
