@@ -14,8 +14,6 @@ MAX_FPS = 500
 
 DEBUG = True
 
-x = 0
-
 
 def update(game_state):
     player = game_state.player
@@ -24,19 +22,11 @@ def update(game_state):
     dt = game_state.clock.tick(MAX_FPS) / 30
 
     player.update(pressed, dt, game_state.terrain)
-    global x
-    x += 1
 
     if pygame.mouse.get_pressed()[0]:
         mx, my = pygame.mouse.get_pos()
         offset = pygame.Vector2(mx - SCREEN_WIDTH // 2, my - SCREEN_HEIGHT // 2)
         mouse_world_pos = game_state.last_camera_center + offset
-        if x > 100:
-            game_state.enemies.append(enemy_classes.Worm(initial_pos=(mouse_world_pos.x, mouse_world_pos.y),
-                                                         animations=AssetFactory().worm(),
-                                                         length=random.randint(5, 50)))
-            x = 0
-
         new_proj = player.shoot_at(mouse_world_pos)
         if new_proj:
             game_state.player_projectiles.append(new_proj)
