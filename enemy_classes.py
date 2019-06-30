@@ -18,23 +18,26 @@ class AssaultSoldier(BlockedByTerrain):
         self.y_vel = 0
         self.drag = 0.03
         self.in_air = False
-        self.health = 200
+        self.health = 1000
 
     def update(self, dt, terrain, player_pos):
         self.update_velocity(dt)
-        animation = "face_right" if self.x_vel > 0 else "face_left"
+        animation = "face_right" if self.moving_right > 0 else "face_left"
         self.sprite.update(dt, animation)
         self.update_pos(dt, terrain)
 
     def update_velocity(self, dt):
         VelocityUpdates.gravity(self, dt)
         VelocityUpdates.drag(self, dt)
-        self.x_vel = self.move_speed if self.moving_right else -self.move_speed
         if not self.in_air and random.random() > 0.999:
             self.moving_right = not self.moving_right
+            self.x_vel = self.move_speed if self.moving_right else -self.move_speed
 
     def take_damage(self, proj):
         self.health -= proj.damage
+        knockback = proj.damage / 40
+        self.y_vel -= knockback * 2
+        self.x_vel += knockback if proj.x_vel > 0 else -knockback
         if self.health <= 0:
             self.to_remove = True
 
