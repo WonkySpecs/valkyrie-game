@@ -15,15 +15,8 @@ MAX_FPS = 500
 DEBUG = True
 
 
-def remove_unneeded_objects(l):
-    l[:] = [e for e in l if not e.to_remove]
-
-
 def update(game_state):
-    for l in [game_state.player_projectiles,
-              game_state.enemy_projectiles,
-              game_state.enemies]:
-        remove_unneeded_objects(l)
+    game_state.remove_to_remove_objects()
     player = game_state.player
 
     pressed = pygame.key.get_pressed()

@@ -18,3 +18,9 @@ class GameState:
         self.terrain = terrain or []
         self.hud = hud or {}
         self.last_camera_center = last_camera_center
+
+    def remove_to_remove_objects(self):
+        for l in [self.player_projectiles,
+                  self.enemy_projectiles,
+                  self.enemies]:
+            l[:] = [e for e in l if not e.to_remove]
