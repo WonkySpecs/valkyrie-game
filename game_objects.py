@@ -102,6 +102,7 @@ class BlockedByTerrain(SingleSprite):
         moved_y_hb.y = new_y
 
         x_ok, y_ok = True, True
+        self.in_air = True
 
         for hb in [terrain_object.hitbox for terrain_object in terrain]:
             if hb.top < hitbox.bottom and hb.bottom > hitbox.top:
