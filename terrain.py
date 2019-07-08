@@ -34,4 +34,22 @@ class Terrain(SingleSprite):
         return x_ok, y_ok, in_air
 
     def platform_block(self, object, moved_hb):
-        pass
+        hb = object.hitbox
+        x_ok = y_ok = in_air = True
+
+        dropping = False
+        try:
+            dropping = object.force_dropping
+        except AttributeError:
+            pass
+
+        if self.hitbox.left < hb.right and self.hitbox.right > hb.left:
+            if object.y_vel > 0 \
+                    and not dropping \
+                    and not object.hitbox.bottom > self.hitbox.bottom \
+                    and moved_hb.top < self.hitbox.top <= moved_hb.bottom:
+                moved_hb.bottom = self.hitbox.top
+                y_ok = False
+                in_air = False
+
+        return x_ok, y_ok, in_air
