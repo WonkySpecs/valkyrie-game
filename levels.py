@@ -4,7 +4,8 @@ import random
 
 import pygame
 
-from game_objects import Player, Terrain, Projectile
+from game_objects import Player, Projectile
+from terrain import Terrain
 import enemy_classes
 from game_state import GameState
 

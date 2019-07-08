@@ -85,56 +85,45 @@ class SingleSprite:
         return self.sprite.hitbox
 
 
-class Terrain(SingleSprite):
-    def take_damage(self, proj):
-        pass
-
-
 class BlockedByTerrain(SingleSprite):
+    def __init__(self, animations, initial_pos, initial_animation):
+        super().__init__(animations, initial_pos, initial_animation)
+        self.force_dropping = False
+
     def update_pos(self, dt, terrain):
-        hitbox = self.sprite.hitbox
-        new_x = self.sprite.x + dt * self.x_vel
-        new_y = self.sprite.y + dt * self.y_vel
+        hitbox = self.hitbox
+        new_x = self.x + dt * self.x_vel
+        new_y = self.y + dt * self.y_vel
         moved_x_hb = hitbox.copy()
         moved_x_hb.x = new_x
-
         moved_y_hb = hitbox.copy()
         moved_y_hb.y = new_y
 
-        x_ok, y_ok = True, True
-        self.in_air = True
-
-        for hb in [terrain_object.hitbox for terrain_object in terrain]:
-            if hb.top < hitbox.bottom and hb.bottom > hitbox.top:
-                if self.x_vel > 0 and moved_x_hb.left < hb.left <= moved_x_hb.right:
-                    hitbox.right = hb.left
-                    self.x_vel = 0
-                    x_ok = False
-                elif self.x_vel < 0 and moved_x_hb.right > hb.right >= moved_x_hb.left:
-                    hitbox.left = hb.right
-                    self.x_vel = 0
-                    x_ok = False
-
-            if hb.left < hitbox.right and hb.right > hitbox.left:
-                if self.y_vel > 0 and moved_y_hb.top < hb.top <= moved_y_hb.bottom:
-                    hitbox.bottom = hb.top
-                    self.y_vel = 0
-                    self.in_air = False
-                    y_ok = False
-                elif self.y_vel < 0 and moved_y_hb.bottom > hb.bottom > moved_y_hb.top:
-                    hitbox.top = hb.bottom
-                    self.y_vel = 0
-                    y_ok = False
-        if x_ok:
+        all_x_ok = all_y_ok = all_in_air = True
+        for t in terrain:
+            x_ok, y_ok, in_air = t.block_object(self, moved_x_hb, moved_y_hb)
+            all_x_ok = all_x_ok and x_ok
+            all_y_ok = all_y_ok and y_ok
+            all_in_air = all_in_air and in_air
+        self.in_air = all_in_air
+        if all_x_ok:
             self.sprite.x = new_x
-        if y_ok:
+        else:
+            self.x_vel = 0
+            self.hitbox.left = self.sprite.x = moved_x_hb.left
+
+        if all_y_ok:
             self.sprite.y = new_y
+        else:
+            self.y_vel = 0
+            self.hitbox.top = self.sprite.y = moved_y_hb.top
 
 
 class Controls:
     up = pygame.K_w
     left = pygame.K_a
     right = pygame.K_d
+    down = pygame.K_s
 
 
 class Player(BlockedByTerrain):
@@ -162,13 +151,14 @@ class Player(BlockedByTerrain):
 
         current_player_animation = "neutral"
         if self.in_air:
-            if pressed[pygame.K_a]:
+            if pressed[Controls.left]:
                 current_player_animation = "fly_left"
-            elif pressed[pygame.K_d]:
+            elif pressed[Controls.right]:
                 current_player_animation = "fly_right"
-            elif pressed[pygame.K_w]:
+            elif pressed[Controls.up]:
                 current_player_animation = "fly_neutral"
         self.sprite.update(dt, current_player_animation)
+        self.force_dropping = pressed[Controls.down]
         self.update_pos(dt, terrain)
         self.till_next_shot -= dt
 
