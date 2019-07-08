@@ -94,14 +94,13 @@ class BlockedByTerrain(SingleSprite):
         hitbox = self.hitbox
         new_x = self.x + dt * self.x_vel
         new_y = self.y + dt * self.y_vel
-        moved_x_hb = hitbox.copy()
-        moved_x_hb.x = new_x
-        moved_y_hb = hitbox.copy()
-        moved_y_hb.y = new_y
+        moved_hb = hitbox.copy()
+        moved_hb.x = new_x
+        moved_hb.y = new_y
 
         all_x_ok = all_y_ok = all_in_air = True
         for t in terrain:
-            x_ok, y_ok, in_air = t.block_object(self, moved_x_hb, moved_y_hb)
+            x_ok, y_ok, in_air = t.block_object(self, moved_hb)
             all_x_ok = all_x_ok and x_ok
             all_y_ok = all_y_ok and y_ok
             all_in_air = all_in_air and in_air
@@ -110,13 +109,13 @@ class BlockedByTerrain(SingleSprite):
             self.sprite.x = new_x
         else:
             self.x_vel = 0
-            self.hitbox.left = self.sprite.x = moved_x_hb.left
+            self.hitbox.left = self.sprite.x = moved_hb.left
 
         if all_y_ok:
             self.sprite.y = new_y
         else:
             self.y_vel = 0
-            self.hitbox.top = self.sprite.y = moved_y_hb.top
+            self.hitbox.top = self.sprite.y = moved_hb.top
 
 
 class Controls:
