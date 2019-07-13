@@ -10,6 +10,7 @@ _sprites_to_load = [
     'player_neutral',
     'assault_soldier_neutral',
     'black',
+    'platform',
     'yellow_bullet',
     'worm_head_1',
     'worm_head_2',
@@ -71,6 +72,12 @@ class AssetFactory:
     def wall_animation(self, width, height):
         return {'neutral': Animation('neutral',
                                      [transform.scale(self.get_sprite("black"), (width, height))],
+                                     [1000],
+                                     Vector2(width, height))}
+
+    def platform_animation(self, width, height):
+        return {'neutral': Animation('neutral',
+                                     [transform.scale(self.get_sprite("platform"), (width, height))],
                                      [1000],
                                      Vector2(width, height))}
 

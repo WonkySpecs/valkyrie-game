@@ -26,7 +26,8 @@ class LevelOne:
                    Terrain(initial_pos=pygame.Vector2(-200, 0), animations=self.assets.wall_animation(20, 800)),
                    Terrain(initial_pos=pygame.Vector2(700, 0), animations=self.assets.wall_animation(50, 800)),
                    Terrain(initial_pos=pygame.Vector2(300, 300), animations=self.assets.wall_animation(50, 50)),
-                   Terrain(initial_pos=pygame.Vector2(200, 500), animations=self.assets.wall_animation(300, 20), platform=True)]
+                   Terrain(initial_pos=pygame.Vector2(200, 500), animations=self.assets.platform_animation(300, 8), platform=True),
+                   Terrain(initial_pos=pygame.Vector2(200, 600), animations=self.assets.platform_animation(300, 8), platform=True)]
 
         def fire_gun(target_pos, start_pos):
             d_pos = target_pos - start_pos
