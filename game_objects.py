@@ -189,11 +189,7 @@ class Player(BlockedByTerrain):
             return self.fire_gun(target_pos, pygame.Vector2(self.sprite.x + 32, self.sprite.y + 34))
 
     def fire_gun(self, target_pos, start_pos):
-        d_pos = target_pos - start_pos
-        theta = math.atan2(d_pos.y, d_pos.x)
-        x_vel = 40 * math.cos(theta)
-        y_vel = 40 * math.sin(theta)
-        return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
+        return Projectile(initial_vel=Projectile.calculate_proj_velocity(target_pos, start_pos, 40),
                           animations=self.sprite.animations['bullet'],
                           initial_pos=start_pos,
                           damage=100)
@@ -228,3 +224,11 @@ class Projectile(Sprite):
     def draw(self, surface, coordinate_map):
         image, pos = self.get_sprite()
         surface.blit(image, coordinate_map(pos))
+
+    @staticmethod
+    def calculate_proj_velocity(target_pos, start_pos, proj_speed):
+        d_pos = target_pos - start_pos
+        theta = math.atan2(d_pos.y, d_pos.x)
+        x_vel = proj_speed * math.cos(theta)
+        y_vel = proj_speed * math.sin(theta)
+        return pygame.Vector2(x_vel, y_vel)

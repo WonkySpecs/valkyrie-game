@@ -64,13 +64,9 @@ class AssaultSoldier(BlockedByTerrain):
                 self.x_vel = 0
 
     def shoot(self):
-        d_pos = self.shooting_at - self.hitbox.center
-        theta = math.atan2(d_pos.y, d_pos.x)
-        x_vel = 5 * math.cos(theta)
-        y_vel = 5 * math.sin(theta)
         self.shots_fired += 1
         self.shot_cooldown = 0
-        return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
+        return Projectile(initial_vel=Projectile.calculate_proj_velocity(self.shooting_at, self.hitbox.center, 5),
                           animations=self.bullet_animation.copy(),
                           initial_pos=pygame.Vector2(self.hitbox.center),
                           damage=10)
