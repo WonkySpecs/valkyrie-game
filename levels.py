@@ -29,19 +29,8 @@ class LevelOne:
                    Terrain(initial_pos=pygame.Vector2(200, 500), animations=self.assets.platform_animation(300, 8), platform=True),
                    Terrain(initial_pos=pygame.Vector2(200, 600), animations=self.assets.platform_animation(300, 8), platform=True)]
 
-        def fire_gun(target_pos, start_pos):
-            d_pos = target_pos - start_pos
-            theta = math.atan2(d_pos.y, d_pos.x)
-            x_vel = 40 * math.cos(theta)
-            y_vel = 40 * math.sin(theta)
-            return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
-                              animations=self.assets.yellow_bullet(),
-                              initial_pos=start_pos,
-                              damage=100)
-
         state = GameState(
-            player=Player(animations=self.assets.player_animations(), initial_pos=pygame.Vector2(320, 50),
-                          fire_gun=fire_gun),
+            player=Player(animations=self.assets.player_animations(), initial_pos=pygame.Vector2(320, 50)),
             enemies=[*[enemy_classes.AssaultSoldier(initial_pos=pygame.Vector2(50 + x, 400),
                                                     move_speed=random.randint(3, 6),
                                                     animations=self.assets.assault_soldier_green())

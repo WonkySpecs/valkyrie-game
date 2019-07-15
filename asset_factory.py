@@ -64,9 +64,11 @@ class AssetFactory:
                                 durations=durations,
                                 hitbox_size=Vector2(25, 48),
                                 offsets=[Vector2(-28, -15) for _ in flight_sprites])]
-        return {
+        animations = {
             a.name: a for a in animations
         }
+        animations['bullet'] = self.yellow_bullet()
+        return animations
 
     def get_background(self):
         return transform.scale(image.load(os.path.join(_asset_root_folder, "bg.jpg")).convert_alpha(), (1600, 1200))

@@ -1,4 +1,5 @@
 import pygame
+import math
 
 gravity = 2.3
 
@@ -130,8 +131,7 @@ class Player(BlockedByTerrain):
                  initial_pos=(0, 0),
                  initial_vel=(0, 0),
                  animations=None,
-                 initial_animation="neutral",
-                 fire_gun=None):
+                 initial_animation="neutral"):
         super().__init__(animations=animations,
                          initial_pos=initial_pos,
                          initial_animation=initial_animation)
@@ -139,7 +139,6 @@ class Player(BlockedByTerrain):
         self.jetpack_power = 5.5
         self.shoot_delay = 2
         self.till_next_shot = 0
-        self.fire_gun = fire_gun
         self.drag = 0.03
         self.in_air = False
         self.move_speed = 7
@@ -188,6 +187,16 @@ class Player(BlockedByTerrain):
         if self.till_next_shot <= 0:
             self.till_next_shot = self.shoot_delay
             return self.fire_gun(target_pos, pygame.Vector2(self.sprite.x + 32, self.sprite.y + 34))
+
+    def fire_gun(self, target_pos, start_pos):
+        d_pos = target_pos - start_pos
+        theta = math.atan2(d_pos.y, d_pos.x)
+        x_vel = 40 * math.cos(theta)
+        y_vel = 40 * math.sin(theta)
+        return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
+                          animations=self.sprite.animations['bullet'],
+                          initial_pos=start_pos,
+                          damage=100)
 
     def take_damage(self, proj):
         self.health -= proj.damage
