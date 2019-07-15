@@ -191,6 +191,7 @@ class Player(BlockedByTerrain):
 
     def take_damage(self, proj):
         self.health -= proj.damage
+        print(self.health)
 
 
 class Projectile(Sprite):

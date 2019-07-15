@@ -1,7 +1,7 @@
-from game_objects import Sprite, VelocityUpdates, BlockedByTerrain
+from game_objects import VelocityUpdates, BlockedByTerrain, Projectile
 import pygame
 import random
-from collections import deque
+import math
 
 
 class AssaultSoldier(BlockedByTerrain):
@@ -19,20 +19,61 @@ class AssaultSoldier(BlockedByTerrain):
         self.drag = 0.03
         self.in_air = False
         self.health = 1000
+        self.shooting_at = None
+        self.range = 400
+        self.shots_in_burst = 3
+        self.shots_fired = 0
+        self.fire_delay = 25
+        self.pre_fire_delay = 180
+        self.pre_fire_waited = 0
+        self.shot_cooldown = 0
+        self.bullet_animation = animations['projectile']
 
     def update(self, dt, terrain, player_pos):
+        if not self.shooting_at and pygame.Vector2(self.hitbox.center).distance_to(player_pos) < self.range:
+            self.shooting_at = player_pos
+        else:
+            self.moving_right = player_pos.x > self.hitbox.center[0]
+
         self.update_velocity(dt)
         animation = "face_right" if self.moving_right > 0 else "face_left"
         self.sprite.update(dt, animation)
         self.update_pos(dt, terrain)
 
+        if self.shooting_at:
+            if self.shots_fired < self.shots_in_burst:
+                if self.pre_fire_waited < self.pre_fire_delay:
+                    self.pre_fire_waited += 1
+                else:
+                    if self.shot_cooldown < self.fire_delay:
+                        self.shot_cooldown += 1
+                    else:
+                        return self.shoot()
+            else:
+                self.shooting_at = None
+                self.shots_fired = 0
+                self.pre_fire_waited = 0
+
     def update_velocity(self, dt):
         VelocityUpdates.gravity(self, dt)
         VelocityUpdates.drag(self, dt)
         if not self.in_air:
-            if random.random() > 0.999:
-                self.moving_right = not self.moving_right
-            self.x_vel = self.move_speed if self.moving_right else -self.move_speed
+            if not self.shooting_at:
+                self.x_vel = self.move_speed if self.moving_right else -self.move_speed
+            else:
+                self.x_vel = 0
+
+    def shoot(self):
+        d_pos = self.shooting_at - self.hitbox.center
+        theta = math.atan2(d_pos.y, d_pos.x)
+        x_vel = 5 * math.cos(theta)
+        y_vel = 5 * math.sin(theta)
+        self.shots_fired += 1
+        self.shot_cooldown = 0
+        return Projectile(initial_vel=pygame.Vector2(x_vel, y_vel),
+                          animations=self.bullet_animation.copy(),
+                          initial_pos=pygame.Vector2(self.hitbox.center),
+                          damage=10)
 
     def take_damage(self, proj):
         self.health -= proj.damage

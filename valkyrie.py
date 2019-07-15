@@ -29,10 +29,15 @@ def update(game_state, level_update):
             game_state.player_projectiles.append(new_proj)
 
     for enemy in game_state.enemies:
-        enemy.update(dt, game_state.terrain, (player.x, player.y))
+        new_proj = enemy.update(dt, game_state.terrain, pygame.Vector2(player.hitbox.center))
+        if new_proj:
+            game_state.enemy_projectiles.append(new_proj)
 
     for proj in game_state.player_projectiles:
         proj.update(dt, *game_state.terrain, *game_state.enemies)
+
+    for enemy_proj in game_state.enemy_projectiles:
+        enemy_proj.update(dt, *game_state.terrain, *[game_state.player])
 
 
 def main():

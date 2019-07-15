@@ -12,6 +12,8 @@ _sprites_to_load = [
     'black',
     'platform',
     'yellow_bullet',
+    'green_proj_1',
+    'green_proj_2',
     'worm_head_1',
     'worm_head_2',
     'worm_segment'
@@ -92,10 +94,18 @@ class AssetFactory:
                                        frames=[transform.flip(neutral, True, False)],
                                        durations=[1234],
                                        hitbox_size=Vector2(24, 50),
-                                       offsets=[Vector2(-27, -9)])}
+                                       offsets=[Vector2(-27, -9)]),
+                'projectile': self.green_bullet()}
 
     def yellow_bullet(self):
         return {'neutral': Animation('neutral', [self.get_sprite('yellow_bullet')], [1000], Vector2(3, 3))}
+
+    def green_bullet(self):
+        return {'neutral': Animation('neutral',
+                                     [self.get_sprite('green_proj_1'), self.get_sprite('green_proj_2')],
+                                     [450, 90],
+                                     Vector2(6, 6),
+                                     [Vector2(1, 1), Vector2(1, 1)])}
 
     # def worm(self):
     #     head_sprites = [self.get_sprite('worm_head_1'), self.get_sprite('worm_head_2')]

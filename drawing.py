@@ -53,6 +53,9 @@ def draw(screen, game_state):
     for enemy in game_state.enemies:
         enemy.draw(screen, calc_screen_position)
 
+    for enemy_proj in game_state.enemy_projectiles:
+        enemy_proj.draw(screen, calc_screen_position)
+
     player.draw(screen, calc_screen_position)
 
     for projectile in game_state.player_projectiles:
