@@ -18,9 +18,19 @@ class GameState:
         self.terrain = terrain or []
         self.hud = hud or {}
         self.last_camera_center = last_camera_center
+        self.in_cutscene = True
+        self.timer = 0
+        self.cutscene_timer = 0
 
     def remove_to_remove_objects(self):
         for l in [self.player_projectiles,
                   self.enemy_projectiles,
                   self.enemies]:
             l[:] = [e for e in l if not e.to_remove]
+
+    def increment_timers(self, dt):
+        self.timer += dt
+        if self.in_cutscene:
+            self.cutscene_timer += dt
+        else:
+            self.cutscene_timer = 0
