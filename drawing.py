@@ -1,20 +1,27 @@
 import pygame
+from typing import List, Tuple, Callable
 
 from valkyrie import SCREEN_WIDTH, SCREEN_HEIGHT, DEBUG
 
 
-def get_screen_coordinate(screen_center, camera_center, point):
+def get_screen_coordinate(screen_center: pygame.Vector2,
+                          camera_center: pygame.Vector2,
+                          point: pygame.Vector2) -> Tuple[int, int]:
     offset_x, offset_y = screen_center.x - camera_center.x, screen_center.y - camera_center.y
     return point.x + offset_x, point.y + offset_y
 
 
-def rect_to_pointlist(rect, coordinate_convert_func):
+def rect_to_pointlist(rect: pygame.rect,
+                      coordinate_convert_func: Callable[[pygame.Vector2], Tuple[int, int]]
+                      ) -> List[Tuple[int, int]]:
     corners = [(rect.left, rect.top), (rect.right, rect.top),
                (rect.right, rect.bottom), (rect.left, rect.bottom)]
     return [coordinate_convert_func(pygame.Vector2(corner)) for corner in corners]
 
 
-def aim_camera(last, aim, tracking_speed):
+def aim_camera(last: pygame.Vector2,
+               aim: pygame.Vector2,
+               tracking_speed: float) -> pygame.Vector2:
     if not last:
         return aim
 
@@ -38,7 +45,7 @@ def draw(screen, game_state):
     camera_center = aim_camera(game_state.last_camera_center, camera_aim, 5)
     game_state.last_camera_center = camera_center
 
-    def calc_screen_position(point):
+    def calc_screen_position(point: pygame.Vector2) -> Tuple[int, int]:
         return get_screen_coordinate(screen_center, camera_center, point)
 
     screen.fill((123, 123, 123))
