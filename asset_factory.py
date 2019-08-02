@@ -16,7 +16,11 @@ _sprites_to_load = [
     'green_proj_2',
     'worm_head_1',
     'worm_head_2',
-    'worm_segment'
+    'worm_segment',
+    'blue_sky',
+    'chain_link_fence',
+    'foothills',
+    'mountains',
 ]
 
 
@@ -70,8 +74,29 @@ class AssetFactory:
         animations['bullet'] = self.yellow_bullet()
         return animations
 
-    def get_background(self):
-        return transform.scale(image.load(os.path.join(_asset_root_folder, "bg.jpg")).convert_alpha(), (1600, 1200))
+    def background(self):
+        return {'neutral': Animation(
+            name='neutral',
+            frames=[transform.scale(self.get_sprite('blue_sky'), (960, 720))],
+            durations=[123])}
+
+    def chain_fence(self):
+        return {'neutral': Animation(
+            name='neutral',
+            frames=[self.get_sprite("chain_link_fence")],
+            durations=[1234])}
+
+    def foothills(self):
+        return {'neutral': Animation(
+            name='neutral',
+            frames=[self.get_sprite("foothills")],
+            durations=[1234])}
+
+    def mountains(self):
+        return {'neutral': Animation(
+            name='neutral',
+            frames=[self.get_sprite("mountains")],
+            durations=[1234])}
 
     def wall_animation(self, width, height):
         return {'neutral': Animation('neutral',

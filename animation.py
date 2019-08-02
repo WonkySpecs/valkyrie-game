@@ -2,7 +2,7 @@ import pygame
 
 
 class Animation:
-    def __init__(self, name, frames, durations, hitbox_size, offsets=None):
+    def __init__(self, name, frames, durations, hitbox_size=None, offsets=None):
         self.name = name
         self.frames = frames
         self.durations = durations

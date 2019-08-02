@@ -1,6 +1,8 @@
 import pygame
 import math
 
+from typing import Tuple, List
+
 gravity = 2.3
 
 
@@ -21,10 +23,11 @@ class Sprite:
                  initial_animation='neutral'):
         self.animations = animations
         self.animation = self.animations[initial_animation]
-        self.image_pos = initial_pos
-        self.hitbox = pygame.Rect(self.image_pos, self.animation.hitbox_size)
-        self._exact_pos = [initial_pos.x, initial_pos.y]
-        self.to_remove = False
+        self.image_pos: pygame.Vector2 = initial_pos
+        if self.animation.hitbox_size:
+            self.hitbox = pygame.Rect(self.image_pos, self.animation.hitbox_size)
+        self._exact_pos: List[float, float] = [initial_pos.x, initial_pos.y]
+        self.to_remove: bool = False
 
     def update(self, dt, animation_name=None):
         if not animation_name or (self.animation and self.animation.name is animation_name):
@@ -232,3 +235,18 @@ class Projectile(Sprite):
         x_vel = proj_speed * math.cos(theta)
         y_vel = proj_speed * math.sin(theta)
         return pygame.Vector2(x_vel, y_vel)
+
+
+class Background(Sprite):
+    def __init__(self, animations, initial_pos, z, initial_animation='neutral'):
+        super().__init__(animations, initial_pos=initial_pos, initial_animation=initial_animation)
+        self.z: float = z
+        self.pos: Tuple[float, float] = initial_pos
+
+    def draw(self, screen: pygame.Surface, camera_aim: pygame.Vector2):
+        if self.z:
+            pos_this_frame = self.pos[0] - camera_aim.x / self.z, self.pos[1] - camera_aim.y / self.z
+        else:
+            pos_this_frame = self.pos
+
+        screen.blit(self.get_sprite()[0], pos_this_frame)

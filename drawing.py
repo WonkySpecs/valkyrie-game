@@ -30,9 +30,13 @@ def draw(screen, game_state):
 
     screen.fill((123, 123, 123))
 
-    for z in sorted(game_state.background_layers.keys()):
-        for bg_image, bg_top_left in game_state.background_layers[z]:
-            screen.blit(bg_image, calc_screen_position(bg_top_left))
+    for bg in game_state.background_layers[0]:
+        bg.draw(screen, camera_center)
+
+    for z in reversed(sorted(game_state.background_layers.keys())):
+        if z > 0:
+            for bg in game_state.background_layers[z]:
+                bg.draw(screen, camera_center)
 
     for terrain in game_state.terrain:
         terrain.draw(screen, calc_screen_position)
