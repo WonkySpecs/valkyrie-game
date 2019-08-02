@@ -19,30 +19,10 @@ def rect_to_pointlist(rect: pygame.rect,
     return [coordinate_convert_func(pygame.Vector2(corner)) for corner in corners]
 
 
-def aim_camera(last: pygame.Vector2,
-               aim: pygame.Vector2,
-               tracking_speed: float) -> pygame.Vector2:
-    if not last:
-        return aim
-
-    if aim.x > last.x:
-        new_aim_x = min(last.x + tracking_speed, aim.x)
-    else:
-        new_aim_x = max(last.x - tracking_speed, aim.x)
-
-    if aim.y > last.y:
-        new_aim_y = min(last.y + tracking_speed, aim.y)
-    else:
-        new_aim_y = max(last.y - tracking_speed, aim.y)
-
-    return pygame.Vector2(new_aim_x, new_aim_y)
-
-
 def draw(screen, game_state):
     player = game_state.player
     screen_center = pygame.Vector2(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    camera_aim = pygame.math.Vector2(player.x, player.y)
-    camera_center = aim_camera(game_state.last_camera_center, camera_aim, 5)
+    camera_center = pygame.math.Vector2(player.x, player.y)
     game_state.last_camera_center = camera_center
 
     def calc_screen_position(point: pygame.Vector2) -> Tuple[int, int]:
